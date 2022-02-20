@@ -1,0 +1,787 @@
+#+TITLE: Config
+
+* Indentation
+For now we set the ~tab-with~ and ~c-basic-offset~ to 4.
+This is probably not the Emacs way to go. Come back to this later
+
+#+begin_src elisp
+(setq-default tab-width 4)
+#+end_src
+
+#+begin_src elisp
+(setq-default c-basic-offset 4)
+#+end_src
+
+Use K&R indentation style for ~c-mode~.
+#+begin_src elisp
+(use-package! cc-mode
+  :config
+  (add-to-list 'c-default-style '(c-mode . "k&r")))
+#+end_src
+
+** smart-tabs-mode
+#+begin_src elisp
+(after! smart-tabs-mode
+  (smart-tabs-insinuate 'c 'javascript)
+  (setq-default indent-tabs-mode nil)
+
+  (add-hook 'c-mode-common-hook
+            (lambda () (setq indent-tabs-mode t)))
+  )
+#+end_src
+
+* UI
+** Theme
+Visual bell
+#+begin_src elisp
+(use-package! doom-themes
+  :config
+  (setq doom-acme-brighter-modeline t)
+  (load-theme 'doom-acme t)
+  (doom-themes-visual-bell-config)
+  (doom-themes-org-config)
+  )
+#+end_src
+
+** Splash
+#+begin_src elisp
+(setq
+ +doom-dashboard-banner-file (expand-file-name "splash.svg" doom-private-dir)
+ +doom-dashboard-banner-padding '(4 . 4)
+ +doom-dashboard-functions '(doom-dashboard-widget-banner
+                             doom-dashboard-widget-shortmenu
+                             doom-dashboard-widget-loaded)
+ )
+#+end_src
+
+** Font
+*** Family
+Doom exposes five (optional) variables for controlling fonts in Doom. Here are the three important ones:
++ `doom-font'
++ `doom-variable-pitch-font'
++ `doom-big-font' -- used for `doom-big-font-mode'; use this for presentations or streaming.
+
+They all accept either a font-spec, font string ("Input Mono-12"), or solved font string. You generally only need these two:
+#+begin_src elisp
+(setq doom-font (font-spec :family "Input Mono" :size 10.5 :weight 'book)
+      doom-unicode-font (font-spec :family "Symbola" :size 14.0)
+      doom-variable-pitch-font (font-spec :family "Noto Sans" :size 11.0 :weight 'normal))
+#+end_src
+
+*** Truncates
+Use Unicode's ellipsis, smaller and nicer than "...".
+#+begin_src elisp
+(setq
+ truncate-string-ellipsis "…"
+ )
+#+end_src
+
+*** Mixed pitch mode
+We add the following fixed-faces:
+- In latex, commands do not have a specific face. To set commands to fixed-pitch, instead we add rainbow-delimiters to ~mixed-pitch-fixed-pitch-faces~.
+- Org-habit blocks
+- Org-scheduled, to fix org-habit graph alignment somewhat
+#+begin_src elisp
+(use-package! mixed-pitch
+  :config
+  (set-face-attribute 'default nil :weight 'book)
+  ;; This breaks font scaling. But otherwise changing fixed-pitch height doesn't work
+  (setq mixed-pitch-set-height 't)
+  (pushnew! mixed-pitch-fixed-pitch-faces
+            ;; Fix for LaTeX where delimiters do not have a face equal to command
+            'rainbow-delimiters-base-face
+            'rainbow-delimiters-depth-1-face
+            'rainbow-delimiters-depth-2-face
+            'rainbow-delimiters-depth-3-face
+            'rainbow-delimiters-depth-4-face
+            'rainbow-delimiters-depth-5-face
+            'rainbow-delimiters-depth-6-face
+            'rainbow-delimiters-depth-7-face
+            'rainbow-delimiters-depth-8-face
+            'rainbow-delimiters-depth-9-face
+            ;; Faces for org-habit graph
+            'org-habit-alert-face
+            'org-habit-alert-future-face
+            'org-habit-clear-face
+            'org-habit-clear-future-face
+            'org-habit-overdue-face
+            'org-habit-overdue-future-face
+            'org-habit-ready-face
+            'org-habit-ready-future-face
+            ;; Fix alignment of org-habit graphs by ignoring scheduled face
+            'org-scheduled
+            'org-scheduled-previously
+            'org-scheduled-today
+            )
+  :hook ((org-mode . mixed-pitch-mode)
+         (TeX-mode . mixed-pitch-mode)
+         (LaTeX-mode . mixed-pitch-mode)
+         (org-roam-mode . mixed-pitch-mode))
+)
+#+end_src
+
+** Line numbers
+ ~display-line-numbers-type~ determines the style of line numbers in effect. If set to ~nil~, line numbers are disabled. For relative line numbers, set this to ~relative~.
+#+begin_src elisp
+(setq display-line-numbers-type t)
+#+end_src
+
+** Line highlighting
+#+begin_src elisp
+(use-package! hl-line
+  :init
+  ;; Enable line highlighting in dired buffers
+  (add-hook 'dired-after-readin-hook 'hl-line-mode)
+  :config
+  (hl-line-mode -1)
+  (global-hl-line-mode -1)
+)
+#+end_src
+
+** Which-key
+replace ~evil~ and ~evil--motion~ with symbols to shorten which-key list
+#+begin_src elisp
+(use-package! which-key
+  :config
+  (setq which-key-idle-delay 0.5)
+  (pushnew!
+   which-key-replacement-alist
+   '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
+   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))
+   ))
+#+end_src
+
+** Beacon
+#+begin_src elisp
+(use-package! beacon
+  :init
+  (beacon-mode 1))
+#+end_src
+
+** Olivetti
+Center the text in buffers and add a nice margin for a better reading and writing experience. Most useful in text-modes, or modes that are used for lots of reading.
+#+begin_src elisp
+(use-package! olivetti
+  :hook ((org-mode . olivetti-mode)
+         (markdown-mode . olivetti-mode)
+         (TeX-mode . olivetti-mode)
+         (LaTeX-mode . olivetti-mode)))
+#+end_src
+
+** Syntax highlighting
+Enable ~tree-sitter-mode~ globally for richer syntax highlighting.
+#+begin_src elisp
+(use-package! tree-sitter
+  :config
+  (require 'tree-sitter-langs)
+  (global-tree-sitter-mode)
+  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
+#+end_src
+
+** Misc
+*** Set the scroll offset
+#+begin_src elisp
+(setq-default scroll-margin 7)
+#+end_src
+
+*** Stripe-buffer
+Stripe buffer rows where it makes sense
+#+begin_src elisp
+(use-package! stripe-buffer
+  :config
+  (set-face-attribute 'stripe-highlight nil :background "white")
+  :hook ((org-mode . turn-on-stripe-table-mode)
+         (dired-mode . stripe-listify-buffer)))
+#+end_src
+
+*** Indications
+Indicate buffer boundaries and empty lines
+#+begin_src elisp
+(setq-default indicate-empty-lines t
+              indicate-buffer-boundaries t)
+#+end_src
+(blink-cursor-mode +1)
+*** Cursor
+Enable blinking cursor
+#+begin_src elisp
+(blink-cursor-mode +1)
+#+end_src
+* Evil
+** Evil goggles
+#+begin_src elisp
+(use-package! evil-goggles
+  :custom
+  (evil-goggles-pulse t)
+  (evil-goggles-duration 0.1)
+  (evil-goggles-enable-delete t)
+  (evil-goggles-enable-change t)
+  )
+#+end_src
+** Evil matchit
+#+begin_src elisp
+(use-package! evil-matchit
+  :config
+  (global-evil-matchit-mode 1)
+  )
+#+end_src
+** Escape
+Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that provides a function ~evil-escape~ that does exactly this. As I don't like evil-escape-key-sequences, where evil-escape is called after a quick succession of two specific keypresses, inhibit evil-escape itself.
+#+begin_src elisp
+(use-package! evil-escape
+  :config
+  (setq evil-escape-inhibit t)
+  (global-set-key (kbd "C-;") 'evil-escape)
+  )
+#+end_src
+* Language Server
+Disable lsp's lensen for now, as they clutter the buffer to much.
+#+begin_src elisp
+(use-package! lsp-mode
+  :config
+  (setq lsp-lens-enable nil)
+  )
+#+end_src
+* LaTeX
+Query for master file.
+#+begin_src elisp
+(after! auctex
+  (setq TeX-master nil)
+  )
+#+end_src
+
+** Preview
+Set transparent color to background for latex preview.
+Scale down LaTeX previews a bit to match the used font.
+#+begin_src elisp
+;; TODO
+(set-default 'preview-scale-function 0.9)
+#+end_src
+
+** Fontify
+#+begin_src elisp
+(setq font-latex-fontify-script 'multi-level)
+#+end_src
+** Prettify
+Add missing LaTeX prettify sequences.
+#+begin_src elisp
+(add-hook 'LaTeX-mode-hook
+          (lambda ()
+                 (push '("\\lnot" . 172) prettify-symbols-alist)
+                 (push '("\\not \\in" . ?∉) prettify-symbols-alist)
+                 (push '("\\lor" . 8744) prettify-symbols-alist)
+                 (push '("\\land" . 8743) prettify-symbols-alist)))
+#+end_src
+
+* Completion
+** Company
+#+begin_src elisp
+(use-package! company
+  :config
+  (setq company-idle-delay 0)
+  (setq company-minimum-prefix-length 1)
+  ;; Disable tab bound to `company-complete-common-or-cycle' as it clashes with yasnippet.
+  ;; TODO: find a replacement binding for complete-common at least as this is useful.
+  (define-key company-active-map (kbd "<tab>") nil)
+  )
+#+end_src
+
+We set the company-box icons explicitly because they are not set by the company module of doom for some reason, even when =+childframe= is set.
+#+begin_src elisp
+(use-package! company-box
+  :config
+  (setq
+   company-box-icons-all-the-icons
+   (let ((all-the-icons-scale-factor 0.8))
+     `((Unknown       . ,(all-the-icons-material "find_in_page"             :face 'all-the-icons-purple))
+       (Text          . ,(all-the-icons-material "text_fields"              :face 'all-the-icons-green))
+       (Method        . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
+       (Function      . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
+       (Constructor   . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
+       (Field         . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
+       (Variable      . ,(all-the-icons-material "adjust"                   :face 'all-the-icons-blue))
+       (Class         . ,(all-the-icons-material "class"                    :face 'all-the-icons-red))
+       (Interface     . ,(all-the-icons-material "settings_input_component" :face 'all-the-icons-red))
+       (Module        . ,(all-the-icons-material "view_module"              :face 'all-the-icons-red))
+       (Property      . ,(all-the-icons-material "settings"                 :face 'all-the-icons-red))
+       (Unit          . ,(all-the-icons-material "straighten"               :face 'all-the-icons-red))
+       (Value         . ,(all-the-icons-material "filter_1"                 :face 'all-the-icons-red))
+       (Enum          . ,(all-the-icons-material "plus_one"                 :face 'all-the-icons-red))
+       (Keyword       . ,(all-the-icons-material "filter_center_focus"      :face 'all-the-icons-red))
+       (Snippet       . ,(all-the-icons-material "short_text"               :face 'all-the-icons-red))
+       (Color         . ,(all-the-icons-material "color_lens"               :face 'all-the-icons-red))
+       (File          . ,(all-the-icons-material "insert_drive_file"        :face 'all-the-icons-red))
+       (Reference     . ,(all-the-icons-material "collections_bookmark"     :face 'all-the-icons-red))
+       (Folder        . ,(all-the-icons-material "folder"                   :face 'all-the-icons-red))
+       (EnumMember    . ,(all-the-icons-material "people"                   :face 'all-the-icons-red))
+       (Constant      . ,(all-the-icons-material "pause_circle_filled"      :face 'all-the-icons-red))
+       (Struct        . ,(all-the-icons-material "streetview"               :face 'all-the-icons-red))
+       (Event         . ,(all-the-icons-material "event"                    :face 'all-the-icons-red))
+       (Operator      . ,(all-the-icons-material "control_point"            :face 'all-the-icons-red))
+       (TypeParameter . ,(all-the-icons-material "class"                    :face 'all-the-icons-red))
+       (Template      . ,(all-the-icons-material "short_text"               :face 'all-the-icons-green))
+       (ElispFunction . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
+       (ElispVariable . ,(all-the-icons-material "check_circle"             :face 'all-the-icons-blue))
+       (ElispFeature  . ,(all-the-icons-material "stars"                    :face 'all-the-icons-orange))
+       (ElispFace     . ,(all-the-icons-material "format_paint"             :face 'all-the-icons-pink)))))
+  )
+
+#+end_src
+
+* Org
+** General
+#+begin_src elisp
+(use-package! org
+  :init
+  (setq org-agenda-custom-commands
+        '(("h" "Daily habits"
+           ((agenda ""))
+           ((org-agenda-show-log t)
+            (org-agenda-ndays 7)
+            (org-agenda-log-mode-items '(state))
+            (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":DAILY:"))))
+          ))
+  :config
+
+  (setq org-file-apps '((remote . emacs)
+                        (auto-mode . emacs)
+                        (directory . emacs)
+                        ("\\.mm\\'" . default)
+                        ("\\.x?html?\\'" . default)
+                        ("\\.pdf\\'" . emacs)))
+  (setq org-ellipsis " ⤵")
+  (setq org-todo-keywords
+   '((sequence "TODO(t)" "WAIT(w)" "IDEA(i)" "NEXT(n)" "|" "DONE(d)" "KILL(k)")
+    (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
+    (sequence "|" "OKAY(o)" "YES(y)" "NO(N)")))
+
+  (add-to-list 'org-modules 'org-habit)
+  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+
+  ;; Org capture
+  (setq org-capture-templates '())
+  (add-to-list 'org-capture-templates
+               '("m" "Music" entry (file+headline "music.org" "Inbox")
+                 "* %^{Artist} - %^{Title}
+:PROPERTIES:
+:Artist: %\\1
+:Title: %\\2
+:Genre: %^{Genre}
+:File:
+:Url:
+:Logged: %U
+:END:"
+                 :prepend t))
+
+  (add-to-list 'org-capture-templates
+               '("t" "Personal todo" entry
+                (file+headline +org-capture-todo-file "Inbox")
+                "* TODO %?\n%i\n%a" :prepend t))
+
+  (add-to-list 'org-capture-templates
+               '("n" "Personal notes" entry
+                (file+headline +org-capture-notes-file "Inbox")
+                "* %u %?\n%i\n%a" :prepend t))
+
+  (add-to-list 'org-capture-templates
+               '("j" "Journal" entry
+                (file+olp+datetree +org-capture-journal-file)
+                "* %U %?\n%i\n%a" :prepend t))
+
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("J" "Job" entry
+  ;;               (file+headline "jobs.org" "Inbox")
+  ;;               "* [ ] %?\n%i\n%a\n[[apply][%^{Link}]]" :prepend t))
+
+  (add-to-list 'org-capture-templates
+               '("J" "Job" entry
+                 (file+headline "jobs.org" "Inbox")
+                 "* %a :job:\n\n%U %?\n\n%:initial"))
+
+  (add-to-list 'org-capture-templates
+               '("w" "Web site" entry
+                 (file "")
+                 "* %a :website:\n\n%U %?\n\n%:initial"))
+
+  (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1)))
+
+  (add-hook! 'org-mode-hook '+org-pretty-mode)
+
+  (setq
+   org-agenda-breadcrumbs-separator " ❱ "
+   org-agenda-current-time-string "⮜┈┈┈┈┈┈┈┈┈┈┈ now"
+   org-agenda-time-grid '((weekly today require-timed)
+                          (800 1000 1200 1400 1600 1800 2000)
+                          "---" "┈┈┈┈┈┈┈┈┈┈┈┈┈")
+   org-agenda-prefix-format '((agenda . "%i %-12:c%?-12t%b% s")
+                              (todo . " %i %-12:c")
+                              (tags . " %i %-12:c")
+                              (search . " %i %-12:c"))
+   ;; org-agenda-format-date (lambda (date) (concat (org-agenda-format-date-aligned date) "\n"))
+   )
+
+  (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
+  (setq org-agenda-skip-scheduled-if-deadline-is-shown 'not-today)
+
+  (custom-set-faces!
+    '(org-agenda-date :inherit variable-pitch :height 2.0 :foreground "LightYellow4" :weight normal)
+    '(org-agenda-date-today :inherit variable-pitch :height 2.0 :underline t :foreground "black" :slant normal :weight bold)
+    '(org-agenda-date-weekend :inherit variable-pitch :height 2.0 :slant italic :weight light :foreground "LightYellow4")
+    '(org-scheduled :foreground "black")
+    '(org-scheduled-today :foreground "black")
+    '(org-time-grid :foreground "#1054AF")
+    '(org-todo :box "dim gray" :foreground "#1054AF" :background "white smoke")
+    '(org-done :box "dim gray" :strike-through t)
+    '(org-headline-done :strike-through t)
+    '(org-ellipsis :inherit variable-pitch :foreground "LightYellow4" :underline nil :height .6 :strike-through nil)
+    )
+
+  :custom
+  ;; If you use `org' and don't want your org files in the default location below,
+  ;; change `org-directory'. It must be set before org loads!
+  (org-agenda-start-with-log-mode t)
+  (org-agenda-tags-column -77)
+
+  (org-directory "~/org/")
+
+  (org-ditaa-jar-path "~/.doom.d/scripts/ditaa.jar")
+
+  (org-log-done 'time)
+  ;; (org-log-into-drawer t)
+  ;; (org-habit-show-habits-only-for-today nil)
+  (org-indent-indentation-per-level 1)
+  (org-tags-column -77)
+  )
+#+end_src
+
+** Roam
+#+begin_src elisp
+(use-package! org-roam
+  :config
+  (setq org-roam-capture-ref-templates '())
+  (add-to-list 'org-roam-capture-ref-templates
+               '("r" "ref" plain "%?%:initial\n"
+                 :target (file+head "reference/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+                 :unnarrowed t
+                 :empty-lines 1
+                 ))
+
+  )
+#+end_src
+
+#+RESULTS:
+: t
+
+
+#+begin_src elisp
+(use-package! websocket
+  :after org-roam)
+
+(use-package! org-roam-ui
+  :after org-roam
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t)
+
+  ;; (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url)
+  )
+#+end_src
+
+** Agenda
+#+begin_src elisp
+(use-package! org-super-agenda
+  :after org-agenda
+  :config
+  (setq org-super-agenda-groups
+                         '((:name "Today"
+                            :time-grid t
+                            :order 1)
+                           (:name "Next"
+                            :todo ("NEXT")
+                            :order 2)
+                           (:name "Wait"
+                            :todo ("WAIT")
+                            :order 4)
+                           (:name "Done"
+                            :todo ("DONE" "KILL")
+                            :order 6)
+                           (:name "Habits"
+                            :habit t
+                            :order 5)
+                           (:name "Thesis"
+                            :auto-category t
+                            :order 3)
+                           ))
+
+  (custom-set-faces!
+    '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold)
+    )
+
+  (org-super-agenda-mode 1)
+
+  ;; Fix evil keybindings as org-super-agenda shadows these when point is on header
+  (after! evil-org-agenda
+    (setq org-super-agenda-header-map evil-org-agenda-mode-map))
+  )
+#+end_src
+
+** Superstar
+#+begin_src elisp
+(use-package! org-superstar
+  :hook (org-mode . org-superstar-mode)
+  :init
+  :config
+  (setq org-superstar-headline-bullets-list
+        '("◉" "●" "○" "◈" "◆" "❖" "▶" "▷"))
+
+  (custom-set-faces!
+    '(org-superstar-header-bullet :inherit variable-pitch :height 0.7)
+    '(org-superstar-item :height 1.2)
+    '(org-superstar-leading :height 1.3)
+    )
+  )
+#+end_src
+
+** Pretty tables
+#+begin_src elisp
+(use-package! org-pretty-table
+  :after (org)
+  :config
+  (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
+#+end_src
+
+** Org appear
+#+begin_src elisp
+
+(use-package! org-appear
+  :hook (org-mode . org-appear-mode)
+  :config
+  (setq org-appear-autoemphasis t
+        org-appear-autosubmarkers t
+        org-appear-autolinks nil)
+  ;; for proper first-time setup, `org-appear--set-elements'
+  ;; needs to be run after other hooks have acted.
+  (run-at-time nil nil #'org-appear--set-elements))
+
+#+end_src
+
+** Org capture
+#+begin_src elisp
+(use-package! org-protocol-capture-map)
+#+end_src
+
+* Checkers
+** Spelling
+*** Flyspell
+Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with evil-escape.
+#+begin_src elisp
+(setq ispell-dictionary "en")
+
+(defun my/sync-personal-dictionary ()
+  ;; Match the current personal dictionary to the dictionary in use.
+  (setq ispell-current-personal-dictionary
+        (expand-file-name (concat "ispell/" ispell-current-dictionary ".pws")
+                          doom-etc-dir))
+  ;; For some reason, ispell also errors when the ispell-personal-dictionary does not match the current dictionary.
+  (setq ispell-personal-dictionary ispell-current-personal-dictionary)
+  (flyspell-buffer))
+
+(use-package! flyspell
+  :config
+  (add-hook 'ispell-change-dictionary-hook 'my/sync-personal-dictionary)
+  ;; (add-hook 'ispell-change-dictionary-hook 'flyspell-buffer)
+  (ispell-change-dictionary "en")
+  (define-key flyspell-mode-map (kbd "C-;") nil)
+
+  (map! :leader
+        :desc "Change dictionary language"
+        "l" #'ispell-change-dictionary)
+
+  :hook
+  (text-mode . flyspell-mode)
+  )
+#+end_src
+
+*** langtool
+#+begin_src elisp
+(use-package langtool-ignore-fonts
+  :config
+  (add-hook 'LaTeX-mode-hook 'langtool-ignore-fonts-minor-mode)
+  (langtool-ignore-fonts-add 'latex-mode  '(font-lock-comment-face
+                                            font-latex-math-face font-latex-string-face
+                                            font-latex-sedate-face))
+  (add-hook 'markdown-mode-hook 'langtool-ignore-fonts-minor-mode)
+  (langtool-ignore-fonts-add 'markdown-mode '(markdown-code-face)))
+#+end_src
+
+* Mail
+#+begin_src elisp
+(use-package! mu4e
+  :config
+  ;; This is set to 't' to avoid mail syncing issues when using mbsync
+  (setq mu4e-change-filenames-when-moving t)
+  (setq mu4e-maildir "~/mail")
+
+  ;; Set custom mu4e header faces
+  (set-face-foreground 'mu4e-header-face "#CCCCB7")
+
+  (defgroup my-mu4e-header-faces nil
+    "My mu4e header faces"
+    :prefix "mu4e-header-from-face-"
+    :group 'tools
+    )
+
+
+  (defface mu4e-header-from-face
+    '((t :foreground "black"
+         :weight bold
+         ))
+    "mu4e from face"
+    :group 'my-mu4e-header-faces)
+
+  (defface mu4e-header-subject-face
+    '((t :foreground "dim gray"
+         ))
+    "mu4e header face"
+    :group 'my-mu4e-header-faces)
+
+  (defface mu4e-header-date-face
+    '((t :foreground "dim gray"
+         ))
+    "mu4e date face"
+    :group 'my-mu4e-header-faces)
+
+  (defun mu4e~headers-line-apply-flag-face (msg line)
+    line)
+  (defun mu4e~headers-field-apply-basic-properties (msg field val width)
+    (cl-case field
+          (:subject
+           (propertize
+            (concat
+             (mu4e~headers-thread-prefix (mu4e-message-field msg :thread))
+             (truncate-string-to-width val 600))
+            'face
+            (let ((flags (mu4e-message-field msg :flags)))
+              (cond
+               ((memq 'trashed flags) 'mu4e-trashed-face)
+               ((memq 'draft flags) 'mu4e-draft-face)
+               ((or (memq 'unread flags) (memq 'new flags))
+                'mu4e-unread-face)
+               ((memq 'flagged flags) 'mu4e-flagged-face)
+               ((memq 'replied flags) 'mu4e-replied-face)
+               ((memq 'passed flags) 'mu4e-forwarded-face)
+               (t 'mu4e-header-face)))))
+          (:thread-subject
+           (propertize
+            (mu4e~headers-thread-subject msg)
+            'face 'mu4e-header-subject-face))
+          ((:maildir :path :message-id) val)
+          ((:to :from :cc :bcc)
+           (propertize
+            (mu4e~headers-contact-str val)
+            'face 'mu4e-header-from-face))
+          (:from-or-to (mu4e~headers-from-or-to msg))
+          (:date
+           (propertize
+            (format-time-string mu4e-headers-date-format val)
+            'face 'mu4e-header-date-face))
+          (:mailing-list (mu4e~headers-mailing-list val))
+          (:human-date
+           (propertize
+            (mu4e~headers-human-date msg)
+            'help-echo (format-time-string
+                        mu4e-headers-long-date-format
+                        (mu4e-msg-field msg :date))
+            'face 'mu4e-header-date-face))
+          (:flags
+           (propertize (mu4e~headers-flags-str val)
+                       'help-echo (format "%S" val)
+                       'face 'font-lock-type-face))
+          (:tags
+           (propertize
+            (mapconcat 'identity val ", ")
+            'face 'font-lock-builtin-face))
+          (:size (mu4e-display-size val))
+          (t (mu4e~headers-custom-field msg field))))
+  )
+
+
+#+end_src
+
+Note that the actual mail accounts are set in ~private.el~.
+
+#+begin_src elisp
+(use-package! mu4e-contrib)
+#+end_src
+
+** Thread folding
+#+begin_src elisp
+(use-package! mu4e-thread-folding
+  :config
+    ; The prefix string is displayed over the header line and it is thus recommended to have an empty field at the start of an header line. Have a look at mu4e-headers-fields.
+  (add-to-list 'mu4e-header-info-custom
+               '(:empty . (:name "Empty"
+                           :shortname ""
+                           :function (lambda (msg) "  "))))
+  (setq mu4e-headers-fields '((:empty         .    2)
+                              ;; (:flags         .    6)
+                              (:from          .   22)
+                              (:mailing-list  .   10)
+                              (:human-date    .   12)
+                              (:subject       .   nil)
+                              ))
+  )
+#+end_src
+
+* Misc
+#+begin_src elisp
+(use-package! gnuplot-mode)
+#+end_src
+
+** Defer academic-phrases
+#+begin_src elisp
+(use-package! academic-phrases
+  ;; :hook (text-mode tex-mode)
+  :defer
+  )
+#+end_src
+
+* Bib
+Requirements: [[https://github.com/jgm/citeproc][citeproc]]
+
+#+begin_src elisp
+(use-package! biblio)
+#+end_src
+
+Set bibliography directory
+#+begin_src elisp
+(defvar my/bibs '("~/bib/references.bib"))
+#+end_src
+
+#+begin_src elisp
+(use-package! citar
+  :config
+  (setq citar-symbols
+        `((file . (,(all-the-icons-icon-for-file "foo.pdf" :face 'all-the-icons-dred) .
+                   ,(all-the-icons-icon-for-file "foo.pdf" :face 'citar-icon-dim)))
+          (note . (,(all-the-icons-icon-for-file "foo.txt") .
+                   ,(all-the-icons-icon-for-file "foo.txt" :face 'citar-icon-dim)))
+          (link .
+                (,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'all-the-icons-dpurple) .
+                 ,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'citar-icon-dim)))))
+  ;; Here we define a face to dim non 'active' icons, but preserve alignment
+  (defface citar-icon-dim
+    '((((background dark)) :foreground "#282c34")
+      (((background light)) :foreground "#fafafa"))
+    "Face for obscuring/dimming icons"
+    :group 'all-the-icons-faces)
+
+  (setq! citar-bibliography '("~/bib/references.bib")))
+#+end_src
+
+* Private
+Include private config, containing things like email account configuration etc.
+#+begin_src elisp
+(load (doom-path doom-private-dir "private.el"))
+#+end_src
