@@ -26,8 +26,7 @@ Use K&R indentation style for ~c-mode~.
   (setq-default indent-tabs-mode nil)
 
   (add-hook 'c-mode-common-hook
-            (lambda () (setq indent-tabs-mode t)))
-  )
+            (lambda () (setq indent-tabs-mode t))))
 #+end_src
 
 * UI
@@ -39,8 +38,7 @@ Visual bell
   (setq doom-acme-brighter-modeline t)
   (load-theme 'doom-acme t)
   (doom-themes-visual-bell-config)
-  (doom-themes-org-config)
-  )
+  (doom-themes-org-config))
 #+end_src
 
 ** Splash
@@ -57,9 +55,9 @@ Visual bell
 ** Font
 *** Family
 Doom exposes five (optional) variables for controlling fonts in Doom. Here are the three important ones:
-+ `doom-font'
-+ `doom-variable-pitch-font'
-+ `doom-big-font' -- used for `doom-big-font-mode'; use this for presentations or streaming.
++ ~doom-font~
++ ~doom-variable-pitch-font~
++ ~doom-big-font~ -- used for ~doom-big-font-mode~; use this for presentations or streaming.
 
 They all accept either a font-spec, font string ("Input Mono-12"), or solved font string. You generally only need these two:
 #+begin_src elisp
@@ -71,9 +69,7 @@ They all accept either a font-spec, font string ("Input Mono-12"), or solved fon
 *** Truncates
 Use Unicode's ellipsis, smaller and nicer than "...".
 #+begin_src elisp
-(setq
- truncate-string-ellipsis "…"
- )
+(setq truncate-string-ellipsis "…")
 #+end_src
 
 *** Mixed pitch mode
@@ -116,8 +112,7 @@ We add the following fixed-faces:
   :hook ((org-mode . mixed-pitch-mode)
          (TeX-mode . mixed-pitch-mode)
          (LaTeX-mode . mixed-pitch-mode)
-         (org-roam-mode . mixed-pitch-mode))
-)
+         (org-roam-mode . mixed-pitch-mode)))
 #+end_src
 
 ** Line numbers
@@ -134,8 +129,7 @@ We add the following fixed-faces:
   (add-hook 'dired-after-readin-hook 'hl-line-mode)
   :config
   (hl-line-mode -1)
-  (global-hl-line-mode -1)
-)
+  (global-hl-line-mode -1))
 #+end_src
 
 ** Which-key
@@ -147,8 +141,7 @@ replace ~evil~ and ~evil--motion~ with symbols to shorten which-key list
   (pushnew!
    which-key-replacement-alist
    '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
-   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))
-   ))
+   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))))
 #+end_src
 
 ** Beacon
@@ -214,15 +207,13 @@ Enable blinking cursor
   (evil-goggles-pulse t)
   (evil-goggles-duration 0.1)
   (evil-goggles-enable-delete t)
-  (evil-goggles-enable-change t)
-  )
+  (evil-goggles-enable-change t))
 #+end_src
 ** Evil matchit
 #+begin_src elisp
 (use-package! evil-matchit
   :config
-  (global-evil-matchit-mode 1)
-  )
+  (global-evil-matchit-mode 1))
 #+end_src
 ** Escape
 Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that provides a function ~evil-escape~ that does exactly this. As I don't like evil-escape-key-sequences, where evil-escape is called after a quick succession of two specific keypresses, inhibit evil-escape itself.
@@ -230,30 +221,26 @@ Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that p
 (use-package! evil-escape
   :config
   (setq evil-escape-inhibit t)
-  (global-set-key (kbd "C-;") 'evil-escape)
-  )
+  (global-set-key (kbd "C-;") 'evil-escape))
 #+end_src
 * Language Server
 Disable lsp's lensen for now, as they clutter the buffer to much.
 #+begin_src elisp
 (use-package! lsp-mode
   :config
-  (setq lsp-lens-enable nil)
-  )
+  (setq lsp-lens-enable nil))
 #+end_src
 * LaTeX
 Query for master file.
 #+begin_src elisp
 (after! auctex
-  (setq TeX-master nil)
-  )
+  (setq TeX-master nil))
 #+end_src
 
 ** Preview
 Set transparent color to background for latex preview.
 Scale down LaTeX previews a bit to match the used font.
 #+begin_src elisp
-;; TODO
 (set-default 'preview-scale-function 0.9)
 #+end_src
 
@@ -387,11 +374,6 @@ We set the company-box icons explicitly because they are not set by the company 
                 (file+olp+datetree +org-capture-journal-file)
                 "* %U %?\n%i\n%a" :prepend t))
 
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("J" "Job" entry
-  ;;               (file+headline "jobs.org" "Inbox")
-  ;;               "* [ ] %?\n%i\n%a\n[[apply][%^{Link}]]" :prepend t))
-
   (add-to-list 'org-capture-templates
                '("J" "Job" entry
                  (file+headline "jobs.org" "Inbox")
@@ -443,10 +425,7 @@ We set the company-box icons explicitly because they are not set by the company 
 
   (org-directory "~/org/")
 
-  (org-ditaa-jar-path "~/.doom.d/scripts/ditaa.jar")
-
   (org-log-done 'time)
-  ;; (org-log-into-drawer t)
   ;; (org-habit-show-habits-only-for-today nil)
   (org-indent-indentation-per-level 1)
   (org-tags-column -77)
@@ -652,8 +631,8 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
     "mu4e date face"
     :group 'my-mu4e-header-faces)
 
-  (defun mu4e~headers-line-apply-flag-face (msg line)
-    line)
+  (defun mu4e~headers-line-apply-flag-face (msg line) line)
+
   (defun mu4e~headers-field-apply-basic-properties (msg field val width)
     (cl-case field
           (:subject
@@ -703,8 +682,7 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
             (mapconcat 'identity val ", ")
             'face 'font-lock-builtin-face))
           (:size (mu4e-display-size val))
-          (t (mu4e~headers-custom-field msg field))))
-  )
+          (t (mu4e~headers-custom-field msg field)))))
 
 
 #+end_src
@@ -729,9 +707,7 @@ Note that the actual mail accounts are set in ~private.el~.
                               (:from          .   22)
                               (:mailing-list  .   10)
                               (:human-date    .   12)
-                              (:subject       .   nil)
-                              ))
-  )
+                              (:subject       .   nil))))
 #+end_src
 
 * Misc
