@@ -711,14 +711,6 @@ Note that the actual mail accounts are set in ~private.el~.
 (use-package! gnuplot-mode)
 #+end_src
 
-** Defer academic-phrases
-#+begin_src elisp
-(use-package! academic-phrases
-  ;; :hook (text-mode tex-mode)
-  :defer
-  )
-#+end_src
-
 * Bib
 Requirements: [[https://github.com/jgm/citeproc][citeproc]]
 

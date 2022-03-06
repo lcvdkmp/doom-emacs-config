@@ -6,8 +6,6 @@
 
 (package! olivetti)
 
-(package! academic-phrases)
-
 (package! mixed-pitch
   :recipe (:local-repo "mixed-pitch" :build (:not compile)))
 
