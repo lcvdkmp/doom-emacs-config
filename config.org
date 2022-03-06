@@ -224,7 +224,7 @@ Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that p
   (global-set-key (kbd "C-;") 'evil-escape))
 #+end_src
 * Language Server
-Disable lsp's lensen for now, as they clutter the buffer to much.
+Disable lsp's lenses for now, as they clutter the buffer too much.
 #+begin_src elisp
 (use-package! lsp-mode
   :config
@@ -608,26 +608,22 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
   (defgroup my-mu4e-header-faces nil
     "My mu4e header faces"
     :prefix "mu4e-header-from-face-"
-    :group 'tools
-    )
+    :group 'tools)
 
 
   (defface mu4e-header-from-face
     '((t :foreground "black"
-         :weight bold
-         ))
+         :weight bold))
     "mu4e from face"
     :group 'my-mu4e-header-faces)
 
   (defface mu4e-header-subject-face
-    '((t :foreground "dim gray"
-         ))
+    '((t :foreground "dim gray"))
     "mu4e header face"
     :group 'my-mu4e-header-faces)
 
   (defface mu4e-header-date-face
-    '((t :foreground "dim gray"
-         ))
+    '((t :foreground "dim gray"))
     "mu4e date face"
     :group 'my-mu4e-header-faces)
 
