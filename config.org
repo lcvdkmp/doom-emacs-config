@@ -550,6 +550,14 @@ We set the company-box icons explicitly because they are not set by the company 
 (use-package! org-protocol-capture-map)
 #+end_src
 
+** Org download
+#+begin_src elisp
+(use-package! org-download
+  :config
+  (setq-default org-download-image-dir ".attach")
+  (setq org-download-method 'directory))
+#+end_src
+
 * Checkers
 ** Spelling
 *** Flyspell
