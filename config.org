@@ -31,7 +31,7 @@ Use K&R indentation style for ~c-mode~.
 
 * UI
 ** Theme
-Visual bell
+Set theme and blink modeline on bell.
 #+begin_src elisp
 (use-package! doom-themes
   :config
@@ -42,14 +42,14 @@ Visual bell
 #+end_src
 
 ** Splash
+Set dashboard splash to old emancs logo, because it's nicer
 #+begin_src elisp
 (setq
  +doom-dashboard-banner-file (expand-file-name "splash.svg" doom-private-dir)
  +doom-dashboard-banner-padding '(4 . 4)
  +doom-dashboard-functions '(doom-dashboard-widget-banner
                              doom-dashboard-widget-shortmenu
-                             doom-dashboard-widget-loaded)
- )
+                             doom-dashboard-widget-loaded))
 #+end_src
 
 ** Font
@@ -66,13 +66,14 @@ They all accept either a font-spec, font string ("Input Mono-12"), or solved fon
       doom-variable-pitch-font (font-spec :family "Noto Sans" :size 11.0 :weight 'normal))
 #+end_src
 
-*** Truncates
+*** Truncate ellipsis
 Use Unicode's ellipsis, smaller and nicer than "...".
 #+begin_src elisp
 (setq truncate-string-ellipsis "…")
 #+end_src
 
 *** Mixed pitch mode
+Enable mixed-pitch-mode where it makes sense (text-modes, LaTeX, and org-mode).
 We add the following fixed-faces:
 - In latex, commands do not have a specific face. To set commands to fixed-pitch, instead we add rainbow-delimiters to ~mixed-pitch-fixed-pitch-faces~.
 - Org-habit blocks
@@ -116,32 +117,30 @@ We add the following fixed-faces:
 #+end_src
 
 ** Line numbers
- ~display-line-numbers-type~ determines the style of line numbers in effect. If set to ~nil~, line numbers are disabled. For relative line numbers, set this to ~relative~.
+Use absolute line numbering
 #+begin_src elisp
 (setq display-line-numbers-type t)
 #+end_src
 
 ** Line highlighting
+Enable line highlighting in dired buffers, but disable it otherwise.
 #+begin_src elisp
 (use-package! hl-line
   :init
-  ;; Enable line highlighting in dired buffers
   (add-hook 'dired-after-readin-hook 'hl-line-mode)
-  :config
-  (hl-line-mode -1)
-  (global-hl-line-mode -1))
+  (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode))
 #+end_src
 
 ** Which-key
-replace ~evil~ and ~evil--motion~ with symbols to shorten which-key list
+Replace ~evil~ and ~evil--motion~ with ~.~ and ~.m~ respectively to shorten which-key list. It would be nice to use some unicode character here, like ~ⓔ~, but this messes up which-keys collumns.
 #+begin_src elisp
 (use-package! which-key
   :config
   (setq which-key-idle-delay 0.5)
   (pushnew!
    which-key-replacement-alist
-   '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . "◂\\1"))
-   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . "◃\\1"))))
+   '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . ".-\\1"))
+   '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . ".m-\\1"))))
 #+end_src
 
 ** Beacon
@@ -266,15 +265,14 @@ Add missing LaTeX prettify sequences.
 
 * Completion
 ** Company
+Disable tab bound to ~company-complete-common-or-cycle~ as it clashes with ~yasnippet~.
 #+begin_src elisp
 (use-package! company
   :config
   (setq company-idle-delay 0)
   (setq company-minimum-prefix-length 1)
-  ;; Disable tab bound to `company-complete-common-or-cycle' as it clashes with yasnippet.
   ;; TODO: find a replacement binding for complete-common at least as this is useful.
-  (define-key company-active-map (kbd "<tab>") nil)
-  )
+  (define-key company-active-map (kbd "<tab>") nil))
 #+end_src
 
 We set the company-box icons explicitly because they are not set by the company module of doom for some reason, even when =+childframe= is set.
@@ -427,8 +425,7 @@ We set the company-box icons explicitly because they are not set by the company 
   (org-log-done 'time)
   ;; (org-habit-show-habits-only-for-today nil)
   (org-indent-indentation-per-level 1)
-  (org-tags-column -77)
-  )
+  (org-tags-column -77))
 #+end_src
 
 ** Roam
@@ -441,14 +438,8 @@ We set the company-box icons explicitly because they are not set by the company 
                  :target (file+head "reference/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
                  :unnarrowed t
                  :empty-lines 1
-                 ))
-
-  )
+                 )))
 #+end_src
-
-#+RESULTS:
-: t
-
 
 #+begin_src elisp
 (use-package! websocket
@@ -460,10 +451,7 @@ We set the company-box icons explicitly because they are not set by the company 
   (setq org-roam-ui-sync-theme t
         org-roam-ui-follow t
         org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t)
-
-  ;; (setq org-roam-ui-browser-function #'xwidget-webkit-browse-url)
-  )
+        org-roam-ui-open-on-start t))
 #+end_src
 
 ** Agenda
@@ -493,15 +481,13 @@ We set the company-box icons explicitly because they are not set by the company 
                            ))
 
   (custom-set-faces!
-    '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold)
-    )
+    '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold))
 
   (org-super-agenda-mode 1)
 
   ;; Fix evil keybindings as org-super-agenda shadows these when point is on header
   (after! evil-org-agenda
-    (setq org-super-agenda-header-map evil-org-agenda-mode-map))
-  )
+    (setq org-super-agenda-header-map evil-org-agenda-mode-map)))
 #+end_src
 
 ** Superstar
@@ -560,7 +546,7 @@ We set the company-box icons explicitly because they are not set by the company 
 * Checkers
 ** Spelling
 *** Flyspell
-Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with evil-escape.
+We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our binding of evil-escape.
 #+begin_src elisp
 (setq ispell-dictionary "en")
 
@@ -574,6 +560,8 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
   (flyspell-buffer))
 
 (use-package! flyspell
+  :hook
+  (text-mode . flyspell-mode)
   :config
   (add-hook 'ispell-change-dictionary-hook 'my/sync-personal-dictionary)
   ;; (add-hook 'ispell-change-dictionary-hook 'flyspell-buffer)
@@ -582,11 +570,7 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
 
   (map! :leader
         :desc "Change dictionary language"
-        "l" #'ispell-change-dictionary)
-
-  :hook
-  (text-mode . flyspell-mode)
-  )
+        "l" #'ispell-change-dictionary))
 #+end_src
 
 *** langtool
@@ -719,7 +703,7 @@ Note that the actual mail accounts are set in ~private.el~.
                               (:subject       .   nil))))
 #+end_src
 
-* Misc
+* Gnuplot
 #+begin_src elisp
 (use-package! gnuplot-mode)
 #+end_src
