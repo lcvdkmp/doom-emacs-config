@@ -193,7 +193,7 @@ Indicate buffer boundaries and empty lines
 (setq-default indicate-empty-lines t
               indicate-buffer-boundaries t)
 #+end_src
-(blink-cursor-mode +1)
+
 *** Cursor
 Enable blinking cursor
 #+begin_src elisp
