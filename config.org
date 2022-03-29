@@ -127,8 +127,10 @@ Use absolute line numbering
 Enable line highlighting in dired buffers, but disable it otherwise.
 #+begin_src elisp
 (use-package! hl-line
+  :hook
+  ((dired-after-readin . hl-line-mode)
+   (org-agenda-mode . hl-line-mode))
   :init
-  (add-hook 'dired-after-readin-hook 'hl-line-mode)
   (remove-hook 'doom-first-buffer-hook #'global-hl-line-mode))
 #+end_src
 
@@ -145,6 +147,7 @@ Replace ~evil~ and ~evil--motion~ with ~.~ and ~.m~ respectively to shorten whic
 #+end_src
 
 ** Beacon
+Show beacon at cursor position on large jumps
 #+begin_src elisp
 (use-package! beacon
   :init
