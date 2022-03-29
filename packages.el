@@ -37,6 +37,9 @@
 (package! org-protocol-capture-map
   :recipe (:local-repo "org-protocol-capture-map" :build (:not compile)))
 
+(package! emacs-bspwm-integration
+  :recipe (:local-repo "emacs-bspwm-integration" :build (:not compile)))
+
 (package! org-appear :recipe (:host github :repo "awth13/org-appear"))
 
 (package! tree-sitter)

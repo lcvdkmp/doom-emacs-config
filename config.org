@@ -199,6 +199,11 @@ Enable blinking cursor
 #+begin_src elisp
 (blink-cursor-mode +1)
 #+end_src
+
+* BSPWM
+#+begin_src elisp
+(use-package! emacs-bspwm-integration)
+#+end_src
 * Evil
 ** Evil goggles
 #+begin_src elisp
