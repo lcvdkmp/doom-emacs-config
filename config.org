@@ -615,6 +615,12 @@ Note that we remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes wi
   (setq mu4e-change-filenames-when-moving t)
   (setq mu4e-maildir "~/mail")
 
+  (setq sendmail-program (executable-find "msmtp")
+        send-mail-function #'smtpmail-send-it
+        message-sendmail-f-is-evil t
+        message-sendmail-extra-arguments '("--read-envelope-from")
+        message-send-mail-function #'message-send-mail-with-sendmail)
+
   ;; Set custom mu4e header faces
   (set-face-foreground 'mu4e-header-face "#CCCCB7")
 
