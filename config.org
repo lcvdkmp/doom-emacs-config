@@ -409,18 +409,12 @@ We set the company-box icons explicitly because they are not set by the company 
   (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
   (setq org-agenda-skip-scheduled-if-deadline-is-shown 'not-today)
 
-  (custom-set-faces!
-    '(org-agenda-date :inherit variable-pitch :height 2.0 :foreground "LightYellow4" :weight normal)
-    '(org-agenda-date-today :inherit variable-pitch :height 2.0 :underline t :foreground "black" :slant normal :weight bold)
-    '(org-agenda-date-weekend :inherit variable-pitch :height 2.0 :slant italic :weight light :foreground "LightYellow4")
-    '(org-scheduled :foreground "black")
-    '(org-scheduled-today :foreground "black")
-    '(org-time-grid :foreground "#1054AF")
-    '(org-todo :box "dim gray" :foreground "#1054AF" :background "white smoke")
-    '(org-done :box "dim gray" :strike-through t)
-    '(org-headline-done :strike-through t)
-    '(org-ellipsis :inherit variable-pitch :foreground "LightYellow4" :underline nil :height .6 :strike-through nil)
-    )
+
+  (custom-set-faces! 
+   '(org-ellipsis :inherit variable-pitch)
+   '(org-agenda-date :inherit variable-pitch)
+   '(org-agenda-date-today :inherit variable-pitch)
+   '(org-agenda-date-weekend :inherit variable-pitch))
 
   :custom
   ;; If you use `org' and don't want your org files in the default location below,
