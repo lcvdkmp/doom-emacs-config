@@ -1,5 +1,4 @@
 #+TITLE: Config
-
 * Indentation
 For now we set the ~tab-with~ and ~c-basic-offset~ to 4.
 This is probably not the Emacs way to go. Come back to this later
@@ -67,7 +66,7 @@ They all accept either a font-spec, font string ("Input Mono-12"), or solved fon
 #+end_src
 
 *** Truncate ellipsis
-Use Unicode's ellipsis, smaller and nicer than "...".
+Use Unicode's ellipsis, smaller than "...".
 #+begin_src elisp
 (setq truncate-string-ellipsis "…")
 #+end_src
@@ -316,8 +315,7 @@ We set the company-box icons explicitly because they are not set by the company 
        (ElispFunction . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
        (ElispVariable . ,(all-the-icons-material "check_circle"             :face 'all-the-icons-blue))
        (ElispFeature  . ,(all-the-icons-material "stars"                    :face 'all-the-icons-orange))
-       (ElispFace     . ,(all-the-icons-material "format_paint"             :face 'all-the-icons-pink)))))
-  )
+       (ElispFace     . ,(all-the-icons-material "format_paint"             :face 'all-the-icons-pink))))))
 
 #+end_src
 
@@ -335,7 +333,6 @@ We set the company-box icons explicitly because they are not set by the company 
             (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":DAILY:"))))
           ))
   :config
-
   (setq org-file-apps '((remote . emacs)
                         (auto-mode . emacs)
                         (directory . emacs)
@@ -441,8 +438,7 @@ We set the company-box icons explicitly because they are not set by the company 
                '("r" "ref" plain "%?%:initial\n"
                  :target (file+head "reference/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
                  :unnarrowed t
-                 :empty-lines 1
-                 )))
+                 :empty-lines 1)))
 #+end_src
 
 #+begin_src elisp
@@ -481,8 +477,7 @@ We set the company-box icons explicitly because they are not set by the company 
                             :order 5)
                            (:name "Thesis"
                             :auto-category t
-                            :order 3)
-                           ))
+                            :order 3)))
 
   (custom-set-faces!
     '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold))
@@ -680,8 +675,6 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
             'face 'font-lock-builtin-face))
           (:size (mu4e-display-size val))
           (t (mu4e~headers-custom-field msg field)))))
-
-
 #+end_src
 
 Note that the actual mail accounts are set in ~private.el~.
