@@ -113,7 +113,8 @@ We add the following fixed-faces:
   :hook ((org-mode . mixed-pitch-mode)
          (TeX-mode . mixed-pitch-mode)
          (LaTeX-mode . mixed-pitch-mode)
-         (org-roam-mode . mixed-pitch-mode)))
+         (org-roam-mode . mixed-pitch-mode)
+         (text-mode . mixed-pitch-mode)))
 #+end_src
 
 ** Line numbers
