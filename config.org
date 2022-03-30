@@ -72,7 +72,7 @@ Use Unicode's ellipsis, smaller than "...".
 #+end_src
 
 *** Mixed pitch mode
-Enable mixed-pitch-mode where it makes sense (text-modes, LaTeX, and org-mode).
+Enable mixed-pitch-mode where it makes sense (LaTeX and org-mode).
 We add the following fixed-faces:
 - In latex, commands do not have a specific face. To set commands to fixed-pitch, instead we add rainbow-delimiters to ~mixed-pitch-fixed-pitch-faces~.
 - Org-habit blocks
@@ -112,8 +112,7 @@ We add the following fixed-faces:
   :hook ((org-mode . mixed-pitch-mode)
          (TeX-mode . mixed-pitch-mode)
          (LaTeX-mode . mixed-pitch-mode)
-         (org-roam-mode . mixed-pitch-mode)
-         (text-mode . mixed-pitch-mode)))
+         (org-roam-mode . mixed-pitch-mode)))
 #+end_src
 
 ** Line numbers
