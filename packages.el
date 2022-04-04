@@ -44,3 +44,4 @@
 
 (package! tree-sitter)
 (package! tree-sitter-langs)
+(package! evil-cleverparens)

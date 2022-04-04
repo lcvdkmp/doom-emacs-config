@@ -229,6 +229,25 @@ Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that p
   (setq evil-escape-inhibit t)
   (global-set-key (kbd "C-;") 'evil-escape))
 #+end_src
+** Evil-cleverparens
+Make evil work well with parenthesis/smartparens. We opt for ~evil-cleverparens~ instead of ~evil-smartparens~ because the latter has incomplete support for visual-mode yanks.
+~evil-cleverparens~ is a lot more feature-rich. We don't need all this functionality, so we could look into adapting evil-smartparens to work well with visual mode yanks.
+ (~lispy~ + )~lispyville~ provides similar functionality, but I don't like the non-vim way of lispy-editting, (modal switches are triggered by character at point instead of key presses).
+#+begin_src elisp
+(use-package! evil-cleverparens
+  :hook ((clojure-mode . evil-cleverparens-mode)
+         (lisp-mode . evil-cleverparens-mode)
+         (emacs-lisp-mode . evil-cleverparens-mode)))
+#+end_src
+
+As parenthesis are managed quite nicely now, we can enable smartparens-strict-mode!
+#+begin_src elisp
+(use-package! smartparens
+  :hook ((clojure-mode . smartparens-strict-mode)
+         (lisp-mode . smartparens-strict-mode)
+         (emacs-lisp-mode . smartparens-strict-mode)))
+#+end_src
+
 * Language Server
 Disable lsp's lenses for now, as they clutter the buffer too much.
 #+begin_src elisp
