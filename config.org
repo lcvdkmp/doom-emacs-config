@@ -41,7 +41,7 @@ Set theme and blink modeline on bell.
 #+end_src
 
 ** Splash
-Set dashboard splash to old emancs logo, because it's nicer
+Set dashboard splash to old emacs logo, because it's nicer
 #+begin_src elisp
 (setq
  +doom-dashboard-banner-file (expand-file-name "splash.svg" doom-private-dir)
@@ -461,15 +461,19 @@ We set the company-box icons explicitly because they are not set by the company 
 
 #+begin_src elisp
 (use-package! websocket
-  :after org-roam)
+    :after org-roam)
 
 (use-package! org-roam-ui
-  :after org-roam
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+    :after org
+;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;         a hookable mode anymore, you're advised to pick something yourself
+;;         if you don't care about startup time, use
+;;  :hook (after-init . org-roam-ui-mode)
+    :config
+    (setq org-roam-ui-sync-theme t
+          org-roam-ui-follow t
+          org-roam-ui-update-on-save t
+          org-roam-ui-open-on-start t))
 #+end_src
 
 ** Agenda
@@ -507,29 +511,75 @@ We set the company-box icons explicitly because they are not set by the company 
     (setq org-super-agenda-header-map evil-org-agenda-mode-map)))
 #+end_src
 
-** Superstar
-#+begin_src elisp
-(use-package! org-superstar
-  :hook (org-mode . org-superstar-mode)
-  :init
-  :config
-  (setq org-superstar-headline-bullets-list
-        '("◉" "●" "○" "◈" "◆" "❖" "▶" "▷"))
 
+** Org modern
+#+begin_src elisp
+(use-package! org-modern
+  :hook
+  (org-mode . org-modern-mode)
+  ;; (org-agenda-finalize . org-modern-agenda)
+  :config
+  (setq org-modern-star ["◉" "●" "○" "◈" "◆" "❖" "▶" "▷"])
   (custom-set-faces!
-    '(org-superstar-header-bullet :inherit variable-pitch :height 0.7)
-    '(org-superstar-item :height 1.2)
-    '(org-superstar-leading :height 1.3)
-    )
-  )
-#+end_src
+    '(org-modern-label nil :height 1.0 :box '(:color "#FFFFE8" :line-width 2)))
+  (setq org-modern-todo nil)
 
-** Pretty tables
-#+begin_src elisp
-(use-package! org-pretty-table
-  :after (org)
-  :config
-  (add-hook 'org-mode-hook (lambda () (org-pretty-table-mode))))
+  (setq org-tags-column 0
+        org-auto-align-tags nil)
+
+  ;; avoid unneccesary calculations, I never need it.
+  (defalias 'org-align-tags #'ignore)
+
+  ;; Inspired by Ihor Radchenko’s code at: https://orgmode.org/list/87lfh745ch.fsf@localhost/
+
+  (add-hook 'org-modern-mode-hook #'aj/org-set-tag-align-keywords)
+  (defun aj/org-set-tag-align-keywords ()
+    (add-to-list 'font-lock-extra-managed-props 'org-tag-aligned)
+    (font-lock-add-keywords nil '((yant/org-align-tags t)) 'append))
+
+  (defun aj/string-pixel-width (string &optional mode)
+    "Calculate pixel width of STRING.
+Optional MODE specifies major mode used for display."
+    (let ((fra face-remapping-alist))
+      (with-temp-buffer
+        (with-silent-modifications
+          (setf (buffer-string) string))
+        (when (fboundp mode)
+          (funcall mode)
+          (font-lock-ensure))
+        (setq-local face-remapping-alist fra)
+        (if (get-buffer-window (current-buffer))
+        (car (window-text-pixel-size nil (line-beginning-position) (point)))
+          (set-window-buffer nil (current-buffer))
+          (car (window-text-pixel-size nil (line-beginning-position) (point)))))))
+
+
+  (defun yant/org-align-tags (limit &optional force)
+    "Align all the tags in org buffer."
+    (save-match-data
+      (when (eq major-mode 'org-mode)
+        (let ((ellw (aj/string-pixel-width org-ellipsis)))
+      (while (re-search-forward "^\\*+ \\(.+?\\)\\([ \t]+\\)\\(:\\(?:[^ \n]+:\\)+\\)$" limit t)
+        (when (and (match-string 2)
+               (or force
+               (not (get-text-property (match-beginning 2) 'org-tag-aligned))))
+          (with-silent-modifications
+                (put-text-property (match-beginning 2) (match-end 2) 'org-tag-aligned t)
+            (put-text-property
+                 (if (>= 2 (- (match-end 2) (match-beginning 2)))
+             (match-beginning 2)
+           ;; multiple whitespaces may mean that we are in process of typing
+           (1+ (match-beginning 2)))
+         (match-end 2)
+         'display
+         `(space . (:align-to
+                            (- right
+                   (,(+ 3 ;; no idea, but otherwise it is sometimes not enough
+                    ellw
+                                    (if (match-beginning 3)
+                                        (car (window-text-pixel-size nil (match-beginning 3) (match-end 3)))
+                                      0))))))))))))))
+  )
 #+end_src
 
 ** Org appear
@@ -718,6 +768,63 @@ Note that the actual mail accounts are set in ~private.el~.
                               (:subject       .   nil))))
 #+end_src
 
+** Sync mail
+Copied from [[https://tecosaur.github.io/emacs-config/config.html#fetching][tecosaurs config]].
+#+begin_src elisp
+(after! mu4e
+  (defvar mu4e-reindex-request-file "/tmp/mu_reindex_now"
+    "Location of the reindex request, signaled by existance")
+  (defvar mu4e-reindex-request-min-seperation 5.0
+    "Don't refresh again until this many second have elapsed.
+Prevents a series of redisplays from being called (when set to an appropriate value)")
+
+  (defvar mu4e-reindex-request--file-watcher nil)
+  (defvar mu4e-reindex-request--file-just-deleted nil)
+  (defvar mu4e-reindex-request--last-time 0)
+
+  (defun mu4e-reindex-request--add-watcher ()
+    (setq mu4e-reindex-request--file-just-deleted nil)
+    (setq mu4e-reindex-request--file-watcher
+          (file-notify-add-watch mu4e-reindex-request-file
+                                 '(change)
+                                 #'mu4e-file-reindex-request)))
+
+  (defadvice! mu4e-stop-watching-for-reindex-request ()
+    :after #'mu4e~proc-kill
+    (if mu4e-reindex-request--file-watcher
+        (file-notify-rm-watch mu4e-reindex-request--file-watcher)))
+
+  (defadvice! mu4e-watch-for-reindex-request ()
+    :after #'mu4e~proc-start
+    (mu4e-stop-watching-for-reindex-request)
+    (when (file-exists-p mu4e-reindex-request-file)
+      (delete-file mu4e-reindex-request-file))
+    (mu4e-reindex-request--add-watcher))
+
+  (defun mu4e-file-reindex-request (event)
+    "Act based on the existance of `mu4e-reindex-request-file'"
+    (if mu4e-reindex-request--file-just-deleted
+        (mu4e-reindex-request--add-watcher)
+      (when (equal (nth 1 event) 'created)
+        (delete-file mu4e-reindex-request-file)
+        (setq mu4e-reindex-request--file-just-deleted t)
+        (mu4e-reindex-maybe t))))
+
+  (defun mu4e-reindex-maybe (&optional new-request)
+    "Run `mu4e~proc-index' if it's been more than
+`mu4e-reindex-request-min-seperation'seconds since the last request,"
+    (let ((time-since-last-request (- (float-time)
+                                      mu4e-reindex-request--last-time)))
+      (when new-request
+        (setq mu4e-reindex-request--last-time (float-time)))
+      (if (> time-since-last-request mu4e-reindex-request-min-seperation)
+          (mu4e~proc-index nil t)
+        (when new-request
+          (run-at-time (* 1.1 mu4e-reindex-request-min-seperation) nil
+                       #'mu4e-reindex-maybe))))))
+
+#+end_src
+
 * Gnuplot
 #+begin_src elisp
 (use-package! gnuplot-mode)
@@ -756,6 +863,14 @@ Set bibliography directory
   (setq! citar-bibliography '("~/bib/references.bib")))
 #+end_src
 
+* Vertico
+#+begin_src elisp
+(use-package! vertico
+  :custom
+  (vertico-count 12)
+  )
+#+end_src
+* Languages
 * Private
 Include private config, containing things like email account configuration etc.
 #+begin_src elisp

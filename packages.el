@@ -31,9 +31,6 @@
 
 (package! langtool-ignore-fonts)
 
-(package! org-pretty-table
-  :recipe (:host github :repo "Fuco1/org-pretty-table"))
-
 (package! org-protocol-capture-map
   :recipe (:local-repo "org-protocol-capture-map" :build (:not compile)))
 
@@ -44,4 +41,7 @@
 
 (package! tree-sitter)
 (package! tree-sitter-langs)
+
+(package! org-modern)
+
 (package! evil-cleverparens)
