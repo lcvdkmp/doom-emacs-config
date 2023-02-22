@@ -21,6 +21,8 @@
 
 (package! biblio)
 
+(package! ox-gfm)
+
 (package! mu4e-thread-folding
  :recipe (:host github :repo "rougier/mu4e-thread-folding"))
 
@@ -45,3 +47,4 @@
 (package! org-modern)
 
 (package! evil-cleverparens)
+(package! poporg)

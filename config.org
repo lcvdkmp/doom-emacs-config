@@ -597,6 +597,11 @@ Optional MODE specifies major mode used for display."
 
 #+end_src
 
+** Org github markdown exporter
+#+begin_src elisp
+(use-package! ox-gfm)
+#+end_src
+
 ** Org capture
 #+begin_src elisp
 (use-package! org-protocol-capture-map)
@@ -609,6 +614,27 @@ Optional MODE specifies major mode used for display."
   (setq-default org-download-image-dir ".attach")
   (setq org-download-method 'directory))
 #+end_src
+
+** Org popup for comment editting
+#+begin_src elisp
+(use-package! markdown-mode)
+
+(use-package! poporg
+  :config
+  (setq poporg-edit-hook '(gfm-mode))
+  (setq poporg-comment-skip-regexp "[[:space:]!/]*")
+  (setq markdown-fontify-code-block-default-mode 'rust-mode)
+  :bind (:map rust-mode-map ("C-c \"" . poporg-dwim)))
+
+;; From https://doc.rust-lang.org/rustdoc/documentation-tests.html#attributes
+(setq rustdoc-attributes '("ignore" "should_panic" "no_run" "compile_fail" "edition2018"))
+
+(defun mg-markdown-get-lang-mode (lang)
+  (if (member lang rustdoc-attributes) 'rust-mode))
+(advice-add 'markdown-get-lang-mode :before-until #'mg-markdown-get-lang-mode)
+#+end_src
+
+#+RESULTS:
 
 * Checkers
 ** Spelling
@@ -871,6 +897,17 @@ Set bibliography directory
   )
 #+end_src
 * Languages
+* Code review
+Use passwords configured for forge.
+#+begin_src elisp
+(use-package! code-review
+  :config
+  (setq code-review-auth-login-marker 'forge)
+  (add-hook 'code-review-mode-hook
+            (lambda ()
+              (persp-add-buffer (current-buffer)))))
+#+end_src
+
 * Private
 Include private config, containing things like email account configuration etc.
 #+begin_src elisp
