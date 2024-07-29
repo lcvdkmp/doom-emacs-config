@@ -29,13 +29,26 @@ Use K&R indentation style for ~c-mode~.
 #+end_src
 
 * UI
+** Emoji
+Remove the emojify global mode set by doom
+#+begin_src elisp
+(use-package! emojify
+  :config
+  (remove-hook 'doom-first-buffer-hook 'global-emojify-mode))
+#+end_src
+
+Use better font
+#+begin_src elisp
+(set-fontset-font t 'emoji '("Noto Color Emoji" . "iso10646-1") nil 'prepend)
+#+end_src
+
 ** Theme
 Set theme and blink modeline on bell.
 #+begin_src elisp
 (use-package! doom-themes
   :config
   (setq doom-acme-brighter-modeline t)
-  (load-theme 'doom-acme t)
+  (load-theme 'modus-vivendi t)
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
 #+end_src
@@ -44,11 +57,11 @@ Set theme and blink modeline on bell.
 Set dashboard splash to old emacs logo, because it's nicer
 #+begin_src elisp
 (setq
- +doom-dashboard-banner-file (expand-file-name "splash.svg" doom-private-dir)
- +doom-dashboard-banner-padding '(4 . 4)
- +doom-dashboard-functions '(doom-dashboard-widget-banner
-                             doom-dashboard-widget-shortmenu
-                             doom-dashboard-widget-loaded))
+ +dashboard-banner-file (expand-file-name "splash.svg" doom-private-dir)
+ +dashboard-banner-vertical-padding '(4 . 4)
+ +dashboard-functions '(+dashboard-widget-banner
+                             +dashboard-widget-shortmenu
+                             +dashboard-widget-loaded))
 #+end_src
 
 ** Font
@@ -60,7 +73,7 @@ Doom exposes five (optional) variables for controlling fonts in Doom. Here are t
 
 They all accept either a font-spec, font string ("Input Mono-12"), or solved font string. You generally only need these two:
 #+begin_src elisp
-(setq doom-font (font-spec :family "Input Mono" :size 10.5 :weight 'book)
+(setq doom-font (font-spec :family "Input Mono" :size 9.5 :weight 'book)
       doom-unicode-font (font-spec :family "Symbola" :size 14.0)
       doom-variable-pitch-font (font-spec :family "Noto Sans" :size 11.0 :weight 'normal))
 #+end_src
@@ -108,12 +121,36 @@ We add the following fixed-faces:
             'org-scheduled
             'org-scheduled-previously
             'org-scheduled-today
-            )
+            ;; Copied from doom
+            'org-date
+            'org-footnote
+            'org-special-keyword
+            'org-property-value
+            'org-ref-cite-face
+            'org-tag
+            'org-todo-keyword-todo
+            'org-todo-keyword-habt
+            'org-todo-keyword-done
+            'org-todo-keyword-wait
+            'org-todo-keyword-kill
+            'org-todo-keyword-outd
+            'org-todo
+            'org-done
+            'font-lock-comment-face)
   :hook ((org-mode . mixed-pitch-mode)
          (TeX-mode . mixed-pitch-mode)
          (LaTeX-mode . mixed-pitch-mode)
-         (org-roam-mode . mixed-pitch-mode)))
+         (org-roam-mode . mixed-pitch-mode)
+         (slack-mode . mixed-pitch-mode)
+         (lui-mode . mixed-pitch-mode)
+         (Info-mode . mixed-pitch-mode)
+         (helpful-mode . mixed-pitch-mode)
+         (markdown-mode . mixed-pitch-mode)
+         (gfm-mode . mixed-pitch-mode)))
 #+end_src
+
+#+RESULTS:
+| +lookup--init-gfm-mode-handlers-h | mixed-pitch-mode |
 
 ** Line numbers
 Use absolute line numbering
@@ -145,7 +182,7 @@ Replace ~evil~ and ~evil--motion~ with ~.~ and ~.m~ respectively to shorten whic
 #+end_src
 
 ** Beacon
-Show beacon at cursor position on large jumps
+Show beacon at cursor position on large ju
 #+begin_src elisp
 (use-package! beacon
   :init
@@ -155,11 +192,11 @@ Show beacon at cursor position on large jumps
 ** Olivetti
 Center the text in buffers and add a nice margin for a better reading and writing experience. Most useful in text-modes, or modes that are used for lots of reading.
 #+begin_src elisp
-(use-package! olivetti
-  :hook ((org-mode . olivetti-mode)
-         (markdown-mode . olivetti-mode)
-         (TeX-mode . olivetti-mode)
-         (LaTeX-mode . olivetti-mode)))
+;; (use-package! olivetti
+;;   :hook ((org-mode . olivetti-mode)
+;;          (markdown-mode . olivetti-mode)
+;;          (TeX-mode . olivetti-mode)
+;;          (LaTeX-mode . olivetti-mode)))
 #+end_src
 
 ** Syntax highlighting
@@ -183,7 +220,7 @@ Stripe buffer rows where it makes sense
 #+begin_src elisp
 (use-package! stripe-buffer
   :config
-  (set-face-attribute 'stripe-highlight nil :background "white")
+  ;; (set-face-attribute 'stripe-highlight nil :background "white")
   :hook ((org-mode . turn-on-stripe-table-mode)
          (dired-mode . stripe-listify-buffer)))
 #+end_src
@@ -201,6 +238,65 @@ Enable blinking cursor
 (blink-cursor-mode +1)
 #+end_src
 
+** Folding
+#+begin_src elisp
+(use-package! treesit-fold
+  :config
+  (map! :leader
+        :desc "Fold"
+        "z" #'treesit-fold-toggle))
+#+end_src
+
+** Embark
+#+begin_src elisp
+;; (use-package! embark
+;;   :config
+;;   (with-eval-after-load 'eglot
+;;     (define-key embark-identifier-map (kbd "t") (eglot-find-typeDefinition))))
+#+end_src
+
+* Github
+#+begin_src elisp
+(use-package! consult-gh
+  :after (consult pr-review embark)
+  :custom
+  (consult-gh-repo-preview-major-mode nil) ; show readmes in their original format
+  (consult-gh-preview-major-mode 'org-mode) ; use 'org-mode for editing comments, commit messages, ...
+  :config
+  )
+
+(use-package! consult-gh-with-pr-review
+  :config
+  (consult-gh-with-pr-review-mode +1))
+
+(use-package! consult-gh-forge
+  :config
+  (consult-gh-forge-mode +1)
+  (setq consult-gh-forge-timeout-seconds 20))
+
+
+(use-package! consult-gh-transient
+  :config
+  (with-eval-after-load 'forge
+    (transient-append-suffix 'forge-dispatch 'forge-add-repository
+      '("g" "More actions (gh)" consult-gh-transient))))
+#+end_src
+
+#+RESULTS:
+: t
+
+* Copilot
+#+begin_src elisp
+;; accept completion from copilot and fallback to company
+;; (use-package! copilot
+;;   ;; :hook (prog-mode . copilot-mode)
+;;   :bind (:map copilot-completion-map
+;;               ("<tab>" . 'copilot-accept-completion)
+;;               ("TAB" . 'copilot-accept-completion)
+;;               ("C-TAB" . 'copilot-accept-completion-by-word)
+;;               ("C-<tab>" . 'copilot-accept-completion-by-word)))
+
+#+end_src
 * BSPWM
 #+begin_src elisp
 (use-package! emacs-bspwm-integration)
@@ -232,7 +328,7 @@ Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that p
 ** Evil-cleverparens
 Make evil work well with parenthesis/smartparens. We opt for ~evil-cleverparens~ instead of ~evil-smartparens~ because the latter has incomplete support for visual-mode yanks.
 ~evil-cleverparens~ is a lot more feature-rich. We don't need all this functionality, so we could look into adapting evil-smartparens to work well with visual mode yanks.
- (~lispy~ + )~lispyville~ provides similar functionality, but I don't like the non-vim way of lispy-editting, (modal switches are triggered by character at point instead of key presses).
+(~lispy~ + )~lispyville~ provides similar functionality, but I don't like the non-vim way of lispy-editting, (modal switches are triggered by character at point instead of key presses).
 #+begin_src elisp
 (use-package! evil-cleverparens
   :hook ((clojure-mode . evil-cleverparens-mode)
@@ -245,16 +341,71 @@ As parenthesis are managed quite nicely now, we can enable smartparens-strict-mo
 (use-package! smartparens
   :hook ((clojure-mode . smartparens-strict-mode)
          (lisp-mode . smartparens-strict-mode)
-         (emacs-lisp-mode . smartparens-strict-mode)))
+         (emacs-lisp-mode . smartparens-strict-mode)
+         (prog-mode . smartparens-mode))
+  :config
+  (map!
+   "C-l" #'sp-forward-slurp-sexp
+   "M-h" #'sp-backward-slurp-sexp
+   "C-h" #'sp-forward-barf-sexp
+   "M-l" #'sp-backward-barf-sexp
+   )
+  )
 #+end_src
 
 * Language Server
+** LSP
 Disable lsp's lenses for now, as they clutter the buffer too much.
 #+begin_src elisp
-(use-package! lsp-mode
-  :config
-  (setq lsp-lens-enable nil))
+;; (use-package! lsp-mode
+;;   :config
+;;   (setq lsp-lens-enable nil))
 #+end_src
+
+#+begin_src elisp
+(add-to-list 'exec-path (expand-file-name "/usr/lib/rustup/bin"))
+#+end_src
+
+** Eglot
+#+begin_src elisp
+(use-package! eglot
+  :config
+  (add-to-list 'eglot-ignored-server-capabilities :inlayHintProvider)
+  (add-to-list 'eglot-server-programs
+               `((rust-ts-mode rust-mode) . ("rust-analyzer" :initializationOptions
+                                             (:procMacro (:enable t)
+                                              :cargo (:buildScripts (:enable t)
+                                                      :features "local-search")))))
+  (add-to-list 'project-vc-extra-root-markers "Cargo.toml")
+  )
+;;   :hook ((rust-mode) . eglot-ensure)
+;;   :config (add-to-list 'eglot-server-programs
+;;                        `(rust-mode . ("rust-analyzer" :initializationOptions
+;;                                      ( :procMacro (:enable t)
+;;                                        :cargo ( :buildScripts (:enable t)
+;;                                                 :features "all"))))))
+#+end_src
+
+Enable extensions.
+#+begin_src elisp
+(use-package! eglot-x
+  :config
+      (with-eval-after-load 'eglot
+      (require 'eglot-x)
+      (eglot-x-setup)))
+#+end_src
+
+Booster
+#+begin_src elisp
+;; (use-package! eglot-booster
+;;   :after eglot
+;;   :config
+;;   (setq eglot-booster-io-only t)
+;;   (eglot-booster-mode))
+#+end_src
+
+#+RESULTS:
+
 * LaTeX
 Query for master file.
 #+begin_src elisp
@@ -278,65 +429,11 @@ Add missing LaTeX prettify sequences.
 #+begin_src elisp
 (add-hook 'LaTeX-mode-hook
           (lambda ()
-                 (push '("\\lnot" . 172) prettify-symbols-alist)
-                 (push '("\\not \\in" . ?∉) prettify-symbols-alist)
-                 (push '("\\lor" . 8744) prettify-symbols-alist)
-                 (push '("\\land" . 8743) prettify-symbols-alist)))
+            (push '("\\lnot" . 172) prettify-symbols-alist)
+            (push '("\\not \\in" . ?∉) prettify-symbols-alist)
+            (push '("\\lor" . 8744) prettify-symbols-alist)
+            (push '("\\land" . 8743) prettify-symbols-alist)))
 #+end_src
-
-* Completion
-** Company
-Disable tab bound to ~company-complete-common-or-cycle~ as it clashes with ~yasnippet~.
-#+begin_src elisp
-(use-package! company
-  :config
-  (setq company-idle-delay 0)
-  (setq company-minimum-prefix-length 1)
-  ;; TODO: find a replacement binding for complete-common at least as this is useful.
-  (define-key company-active-map (kbd "<tab>") nil))
-#+end_src
-
-We set the company-box icons explicitly because they are not set by the company module of doom for some reason, even when =+childframe= is set.
-#+begin_src elisp
-(use-package! company-box
-  :config
-  (setq
-   company-box-icons-all-the-icons
-   (let ((all-the-icons-scale-factor 0.8))
-     `((Unknown       . ,(all-the-icons-material "find_in_page"             :face 'all-the-icons-purple))
-       (Text          . ,(all-the-icons-material "text_fields"              :face 'all-the-icons-green))
-       (Method        . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
-       (Function      . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
-       (Constructor   . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
-       (Field         . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
-       (Variable      . ,(all-the-icons-material "adjust"                   :face 'all-the-icons-blue))
-       (Class         . ,(all-the-icons-material "class"                    :face 'all-the-icons-red))
-       (Interface     . ,(all-the-icons-material "settings_input_component" :face 'all-the-icons-red))
-       (Module        . ,(all-the-icons-material "view_module"              :face 'all-the-icons-red))
-       (Property      . ,(all-the-icons-material "settings"                 :face 'all-the-icons-red))
-       (Unit          . ,(all-the-icons-material "straighten"               :face 'all-the-icons-red))
-       (Value         . ,(all-the-icons-material "filter_1"                 :face 'all-the-icons-red))
-       (Enum          . ,(all-the-icons-material "plus_one"                 :face 'all-the-icons-red))
-       (Keyword       . ,(all-the-icons-material "filter_center_focus"      :face 'all-the-icons-red))
-       (Snippet       . ,(all-the-icons-material "short_text"               :face 'all-the-icons-red))
-       (Color         . ,(all-the-icons-material "color_lens"               :face 'all-the-icons-red))
-       (File          . ,(all-the-icons-material "insert_drive_file"        :face 'all-the-icons-red))
-       (Reference     . ,(all-the-icons-material "collections_bookmark"     :face 'all-the-icons-red))
-       (Folder        . ,(all-the-icons-material "folder"                   :face 'all-the-icons-red))
-       (EnumMember    . ,(all-the-icons-material "people"                   :face 'all-the-icons-red))
-       (Constant      . ,(all-the-icons-material "pause_circle_filled"      :face 'all-the-icons-red))
-       (Struct        . ,(all-the-icons-material "streetview"               :face 'all-the-icons-red))
-       (Event         . ,(all-the-icons-material "event"                    :face 'all-the-icons-red))
-       (Operator      . ,(all-the-icons-material "control_point"            :face 'all-the-icons-red))
-       (TypeParameter . ,(all-the-icons-material "class"                    :face 'all-the-icons-red))
-       (Template      . ,(all-the-icons-material "short_text"               :face 'all-the-icons-green))
-       (ElispFunction . ,(all-the-icons-material "functions"                :face 'all-the-icons-red))
-       (ElispVariable . ,(all-the-icons-material "check_circle"             :face 'all-the-icons-blue))
-       (ElispFeature  . ,(all-the-icons-material "stars"                    :face 'all-the-icons-orange))
-       (ElispFace     . ,(all-the-icons-material "format_paint"             :face 'all-the-icons-pink))))))
-
-#+end_src
-
 * Org
 ** General
 #+begin_src elisp
@@ -351,64 +448,66 @@ We set the company-box icons explicitly because they are not set by the company 
             (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":DAILY:"))))
           ))
   :config
+  ;; fix bug where [...] from isearch in minibuffer cancels my search
+  (setq org-fold-core-style 'overlays)
   (setq org-file-apps '((remote . emacs)
                         (auto-mode . emacs)
                         (directory . emacs)
                         ("\\.mm\\'" . default)
                         ("\\.x?html?\\'" . default)
                         ("\\.pdf\\'" . emacs)))
-  (setq org-ellipsis " ⤵")
+  ;; (setq org-ellipsis " ⤵")
   (setq org-todo-keywords
-   '((sequence "TODO(t)" "WAIT(w)" "IDEA(i)" "NEXT(n)" "|" "DONE(d)" "KILL(k)")
-    (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
-    (sequence "|" "OKAY(o)" "YES(y)" "NO(N)")))
+        '((sequence "TODO(t)" "WAIT(w)" "IDEA(i)" "NEXT(n)" "|" "DONE(d)" "KILL(k)")
+          (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
+          (sequence "|" "OKAY(o)" "YES(y)" "NO(N)")))
 
   (add-to-list 'org-modules 'org-habit)
   (advice-add 'org-refile :after 'org-save-all-org-buffers)
 
   ;; Org capture
-  (setq org-capture-templates '())
-  (add-to-list 'org-capture-templates
-               '("m" "Music" entry (file+headline "music.org" "Inbox")
-                 "* %^{Artist} - %^{Title}
-:PROPERTIES:
-:Artist: %\\1
-:Title: %\\2
-:Genre: %^{Genre}
-:File:
-:Url:
-:Logged: %U
-:END:"
-                 :prepend t))
+  ;;   (setq org-capture-templates '())
+  ;;   (add-to-list 'org-capture-templates
+  ;;                '("m" "Music" entry (file+headline "music.org" "Inbox")
+  ;;                  "* %^{Artist} - %^{Title}
+  ;; :PROPERTIES:
+  ;; :Artist: %\\1
+  ;; :Title: %\\2
+  ;; :Genre: %^{Genre}
+  ;; :File:
+  ;; :Url:
+  ;; :Logged: %U
+  ;; :END:"
+  ;; :prepend t))
 
-  (add-to-list 'org-capture-templates
-               '("t" "Personal todo" entry
-                (file+headline +org-capture-todo-file "Inbox")
-                "* TODO %?\n%i\n%a" :prepend t))
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("t" "Personal todo" entry
+  ;;               (file+headline +org-capture-todo-file "Inbox")
+  ;;               "* TODO %?\n%i\n%a" :prepend t))
 
-  (add-to-list 'org-capture-templates
-               '("n" "Personal notes" entry
-                (file+headline +org-capture-notes-file "Inbox")
-                "* %u %?\n%i\n%a" :prepend t))
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("n" "Personal notes" entry
+  ;;               (file+headline +org-capture-notes-file "Inbox")
+  ;;               "* %u %?\n%i\n%a" :prepend t))
 
-  (add-to-list 'org-capture-templates
-               '("j" "Journal" entry
-                (file+olp+datetree +org-capture-journal-file)
-                "* %U %?\n%i\n%a" :prepend t))
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("j" "Journal" entry
+  ;;               (file+olp+datetree +org-capture-journal-file)
+  ;;               "* %U %?\n%i\n%a" :prepend t))
 
-  (add-to-list 'org-capture-templates
-               '("J" "Job" entry
-                 (file+headline "jobs.org" "Inbox")
-                 "* %a :job:\n\n%U %?\n\n%:initial"))
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("J" "Job" entry
+  ;;                (file+headline "jobs.org" "Inbox")
+  ;;                "* %a :job:\n\n%U %?\n\n%:initial"))
 
-  (add-to-list 'org-capture-templates
-               '("w" "Web site" entry
-                 (file "")
-                 "* %a :website:\n\n%U %?\n\n%:initial"))
+  ;; (add-to-list 'org-capture-templates
+  ;;              '("w" "Web site" entry
+  ;;                (file "")
+  ;;                "* %a :website:\n\n%U %?\n\n%:initial"))
 
   (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1)))
 
-  (add-hook! 'org-mode-hook '+org-pretty-mode)
+  ;; (add-hook! 'org-mode-hook '+org-pretty-mode)
 
   (setq
    org-agenda-breadcrumbs-separator " ❱ "
@@ -427,11 +526,11 @@ We set the company-box icons explicitly because they are not set by the company 
   (setq org-agenda-skip-scheduled-if-deadline-is-shown 'not-today)
 
 
-  (custom-set-faces! 
-   '(org-ellipsis :inherit variable-pitch)
-   '(org-agenda-date :inherit variable-pitch)
-   '(org-agenda-date-today :inherit variable-pitch)
-   '(org-agenda-date-weekend :inherit variable-pitch))
+  (custom-set-faces!
+    '(org-ellipsis :inherit variable-pitch)
+    '(org-agenda-date :inherit variable-pitch)
+    '(org-agenda-date-today :inherit variable-pitch)
+    '(org-agenda-date-weekend :inherit variable-pitch))
 
   :custom
   ;; If you use `org' and don't want your org files in the default location below,
@@ -446,35 +545,56 @@ We set the company-box icons explicitly because they are not set by the company 
   (org-indent-indentation-per-level 1)
   (org-tags-column -77))
 #+end_src
+** Org outlook
+#+begin_src elisp
+;; (use-package! org-outlook
+;;   :config
+;;   ;; org-outlook uses eschulte-web-server. This packages name overlaps with skeeto's
+;;   (setq org-outlook-gpg-recipient "luca.van.der.kamp@postnl.nl")
+;;   (setq org-outlook-local-timezone "Europe/Berlin") ; Your local time zone
+;;   (setq org-outlook-file "~/org/outlook.org")
 
+;;   ;; Sync range (number of days)
+;;   (setq org-outlook-sync-start 14)  ; days in the past to keep in sync
+;;   (setq org-outlook-sync-end 90)    ; days in the future to keep in sync
+
+;;   ;; Optional: Customize full sync frequency (default: 7 days)
+;;   (setq org-outlook-full-sync-interval-days 7)  ; weekly validation
+;;                                         ;(setq org-outlook-full-sync-interval-days 14) ; bi-weekly validation
+;;                                         ;(setq org-outlook-full-sync-interval-days nil) ; disable automatic full syncs
+;;   )
+#+end_src
 ** Roam
 #+begin_src elisp
-(use-package! org-roam
-  :config
-  (setq org-roam-capture-ref-templates '())
-  (add-to-list 'org-roam-capture-ref-templates
-               '("r" "ref" plain "%?%:initial\n"
-                 :target (file+head "reference/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
-                 :unnarrowed t
-                 :empty-lines 1)))
+;; (use-package! org-roam
+;;   :config
+;;   (setq org-roam-capture-ref-templates '())
+;;   (add-to-list 'org-roam-capture-ref-templates
+;;                '("r" "ref" plain "%?%:initial\n"
+;;                  :target (file+head "reference/%<%Y%m%d%H%M%S>-${slug}.org" "#+title: ${title}")
+;;                  :unnarrowed t
+;;                  :empty-lines 1)))
 #+end_src
 
 #+begin_src elisp
 (use-package! websocket
-    :after org-roam)
+  :after org-roam)
 
 (use-package! org-roam-ui
-    :after org
-;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-;;         a hookable mode anymore, you're advised to pick something yourself
-;;         if you don't care about startup time, use
-;;  :hook (after-init . org-roam-ui-mode)
-    :config
-    (setq org-roam-ui-sync-theme t
-          org-roam-ui-follow t
-          org-roam-ui-update-on-save t
-          org-roam-ui-open-on-start t))
+  :after org
+  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+  ;;         a hookable mode anymore, you're advised to pick something yourself
+  ;;         if you don't care about startup time, use
+  ;;  :hook (after-init . org-roam-ui-mode)
+  :config
+  (setq org-roam-ui-sync-theme t
+        org-roam-ui-follow t
+        org-roam-ui-update-on-save t
+        org-roam-ui-open-on-start t))
 #+end_src
+
+#+RESULTS:
+: t
 
 ** Agenda
 #+begin_src elisp
@@ -482,24 +602,24 @@ We set the company-box icons explicitly because they are not set by the company 
   :after org-agenda
   :config
   (setq org-super-agenda-groups
-                         '((:name "Today"
-                            :time-grid t
-                            :order 1)
-                           (:name "Next"
-                            :todo ("NEXT")
-                            :order 2)
-                           (:name "Wait"
-                            :todo ("WAIT")
-                            :order 4)
-                           (:name "Done"
-                            :todo ("DONE" "KILL")
-                            :order 6)
-                           (:name "Habits"
-                            :habit t
-                            :order 5)
-                           (:name "Thesis"
-                            :auto-category t
-                            :order 3)))
+        '((:name "Today"
+           :time-grid t
+           :order 1)
+          (:name "Next"
+           :todo ("NEXT")
+           :order 2)
+          (:name "Wait"
+           :todo ("WAIT")
+           :order 4)
+          (:name "Done"
+           :todo ("DONE" "KILL")
+           :order 6)
+          (:name "Habits"
+           :habit t
+           :order 5)
+          (:name "Thesis"
+           :auto-category t
+           :order 3)))
 
   (custom-set-faces!
     '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold))
@@ -516,7 +636,8 @@ We set the company-box icons explicitly because they are not set by the company 
 #+begin_src elisp
 (use-package! org-modern
   :hook
-  (org-mode . org-modern-mode)
+  ((org-mode . org-modern-mode)
+  (org-agenda-finalize-hook . org-modern-agenda))
   ;; (org-agenda-finalize . org-modern-agenda)
   :config
   (setq org-modern-star ["◉" "●" "○" "◈" "◆" "❖" "▶" "▷"])
@@ -549,7 +670,7 @@ Optional MODE specifies major mode used for display."
           (font-lock-ensure))
         (setq-local face-remapping-alist fra)
         (if (get-buffer-window (current-buffer))
-        (car (window-text-pixel-size nil (line-beginning-position) (point)))
+            (car (window-text-pixel-size nil (line-beginning-position) (point)))
           (set-window-buffer nil (current-buffer))
           (car (window-text-pixel-size nil (line-beginning-position) (point)))))))
 
@@ -559,23 +680,23 @@ Optional MODE specifies major mode used for display."
     (save-match-data
       (when (eq major-mode 'org-mode)
         (let ((ellw (aj/string-pixel-width org-ellipsis)))
-      (while (re-search-forward "^\\*+ \\(.+?\\)\\([ \t]+\\)\\(:\\(?:[^ \n]+:\\)+\\)$" limit t)
-        (when (and (match-string 2)
-               (or force
-               (not (get-text-property (match-beginning 2) 'org-tag-aligned))))
-          (with-silent-modifications
+          (while (re-search-forward "^\\*+ \\(.+?\\)\\([ \t]+\\)\\(:\\(?:[^ \n]+:\\)+\\)$" limit t)
+            (when (and (match-string 2)
+                       (or force
+                           (not (get-text-property (match-beginning 2) 'org-tag-aligned))))
+              (with-silent-modifications
                 (put-text-property (match-beginning 2) (match-end 2) 'org-tag-aligned t)
-            (put-text-property
+                (put-text-property
                  (if (>= 2 (- (match-end 2) (match-beginning 2)))
-             (match-beginning 2)
-           ;; multiple whitespaces may mean that we are in process of typing
-           (1+ (match-beginning 2)))
-         (match-end 2)
-         'display
-         `(space . (:align-to
+                     (match-beginning 2)
+                   ;; multiple whitespaces may mean that we are in process of typing
+                   (1+ (match-beginning 2)))
+                 (match-end 2)
+                 'display
+                 `(space . (:align-to
                             (- right
-                   (,(+ 3 ;; no idea, but otherwise it is sometimes not enough
-                    ellw
+                               (,(+ 3 ;; no idea, but otherwise it is sometimes not enough
+                                    ellw
                                     (if (match-beginning 3)
                                         (car (window-text-pixel-size nil (match-beginning 3) (match-end 3)))
                                       0))))))))))))))
@@ -636,7 +757,80 @@ Optional MODE specifies major mode used for display."
 
 #+RESULTS:
 
+** fix ~org-tree-slide~
+#+begin_src elisp
+(after! org-tree-slide
+  (remove-hook 'org-tree-slide-play-hook #'+org-present-hide-blocks-h)
+  (remove-hook 'org-tree-slide-stop-hook #'+org-present-hide-blocks-h))
+#+end_src
+
+* Smerge
+#+begin_src elisp
+(use-package! smerge-mode
+  :config
+  (map! :leader
+        :map smerge-mode-map
+        :desc "Merge"
+        (:prefix ("M" . "smerge")
+                 "RET" #'smerge-keep-current
+                 "C" #'smerge-combine-with-next
+                 "E" #'smerge-ediff
+                 "R" #'smerge-refine
+                 "a" #'smerge-keep-all
+                 "b" #'smerge-keep-base
+                 "l" #'smerge-keep-lower
+                 "m" #'smerge-keep-upper
+                 "n" #'smerge-next
+                 "o" #'smerge-keep-lower
+                 "p" #'smerge-prev
+                 "r" #'smerge-resolve
+                 "u" #'smerge-keep-upper
+                 (:prefix ("=" . "diff")
+                          "<" #'smerge-diff-base-upper
+                          "=" #'smerge-diff-upper-lower
+                          ">" #'smerge-diff-base-lower))))
+#+end_src
+
+#+RESULTS:
+: t
+
 * Checkers
+** Flycheck
+#+begin_src elisp
+(use-package! consult-flycheck
+  :after (consult flycheck)
+  :config
+  (map! :leader
+        "F" #'consult-flycheck))
+#+end_src
+
+The default keybindings are unbearable
+#+begin_src elisp
+(use-package! flycheck
+  :config
+  (map! :leader "e" flycheck-command-map)
+  ;; (setq flycheck-popup-tip-mode -1)
+  )
+#+end_src
+
+#+begin_src elisp
+(use-package! flyover)
+#+end_src
+
+#+begin_src elisp
+(use-package! flycheck-inline
+  :config
+  (with-eval-after-load 'flycheck
+    (add-hook 'flycheck-mode-hook #'flycheck-inline-mode)))
+#+End_src
+
+#+RESULTS:
+
+#+begin_src elisp
+;; (add-hook '+flycheck-popup-mode-hook #'disable-flycheck-popup-tip)
+#+end_src
+
+
 ** Spelling
 *** Flyspell
 We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our binding of evil-escape.
@@ -654,8 +848,18 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
 
 (use-package! flyspell
   :hook
-  (text-mode . flyspell-mode)
+  ((text-mode . flyspell-mode)
+   (prog-mode . flyspell-prog-mode))
   :config
+  (setq flyspell-prog-text-faces
+        '(tree-sitter-hl-face:comment
+          tree-sitter-hl-face:doc
+          tree-sitter-hl-face:string
+          tree-sitter-hl-face:string.special
+          font-lock-comment-face
+          font-lock-doc-face
+          font-lock-string-face))
+
   (add-hook 'ispell-change-dictionary-hook 'my/sync-personal-dictionary)
   ;; (add-hook 'ispell-change-dictionary-hook 'flyspell-buffer)
   (ispell-change-dictionary "en")
@@ -668,7 +872,7 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
 
 *** langtool
 #+begin_src elisp
-(use-package langtool-ignore-fonts
+(use-package! langtool-ignore-fonts
   :config
   (add-hook 'LaTeX-mode-hook 'langtool-ignore-fonts-minor-mode)
   (langtool-ignore-fonts-add 'latex-mode  '(font-lock-comment-face
@@ -678,120 +882,134 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
   (langtool-ignore-fonts-add 'markdown-mode '(markdown-code-face)))
 #+end_src
 
+*** spell-fu
+#+begin_src elisp
+(after! spell-fu
+  (add-hook! prog-mode
+    (setq spell-fu-faces-include
+          '(tree-sitter-hl-face:comment
+            tree-sitter-hl-face:doc
+            tree-sitter-hl-face:string
+            tree-sitter-hl-face:string.special
+            font-lock-comment-face
+            font-lock-doc-face
+            font-lock-string-face))))
+#+end_src
+
 * Mail
 #+begin_src elisp
-(use-package! mu4e
-  :config
-  ;; This is set to 't' to avoid mail syncing issues when using mbsync
-  (setq mu4e-change-filenames-when-moving t)
-  (setq mu4e-maildir "~/mail")
+;; (use-package! mu4e
+;;   :config
+;;   ;; This is set to 't' to avoid mail syncing issues when using mbsync
+;;   (setq mu4e-change-filenames-when-moving t)
+;;   (setq mu4e-maildir "~/mail")
 
-  (setq sendmail-program (executable-find "msmtp")
-        send-mail-function #'smtpmail-send-it
-        message-sendmail-f-is-evil t
-        message-sendmail-extra-arguments '("--read-envelope-from")
-        message-send-mail-function #'message-send-mail-with-sendmail)
+;;   (setq sendmail-program (executable-find "msmtp")
+;;         send-mail-function #'smtpmail-send-it
+;;         message-sendmail-f-is-evil t
+;;         message-sendmail-extra-arguments '("--read-envelope-from")
+;;         message-send-mail-function #'message-send-mail-with-sendmail)
 
-  ;; Set custom mu4e header faces
-  (set-face-foreground 'mu4e-header-face "#CCCCB7")
+;;   ;; Set custom mu4e header faces
+;;   (set-face-foreground 'mu4e-header-face "#CCCCB7")
 
-  (defgroup my-mu4e-header-faces nil
-    "My mu4e header faces"
-    :prefix "mu4e-header-from-face-"
-    :group 'tools)
+;;   (defgroup my-mu4e-header-faces nil
+;;     "My mu4e header faces"
+;;     :prefix "mu4e-header-from-face-"
+;;     :group 'tools)
 
 
-  (defface mu4e-header-from-face
-    '((t :foreground "black"
-         :weight bold))
-    "mu4e from face"
-    :group 'my-mu4e-header-faces)
+;;   (defface mu4e-header-from-face
+;;     '((t :foreground "black"
+;;        :weight bold))
+;;     "mu4e from face"
+;;     :group 'my-mu4e-header-faces)
 
-  (defface mu4e-header-subject-face
-    '((t :foreground "dim gray"))
-    "mu4e header face"
-    :group 'my-mu4e-header-faces)
+;;   (defface mu4e-header-subject-face
+;;     '((t :foreground "dim gray"))
+;;     "mu4e header face"
+;;     :group 'my-mu4e-header-faces)
 
-  (defface mu4e-header-date-face
-    '((t :foreground "dim gray"))
-    "mu4e date face"
-    :group 'my-mu4e-header-faces)
+;;   (defface mu4e-header-date-face
+;;     '((t :foreground "dim gray"))
+;;     "mu4e date face"
+;;     :group 'my-mu4e-header-faces)
 
-  (defun mu4e~headers-line-apply-flag-face (msg line) line)
+;;   (defun mu4e~headers-line-apply-flag-face (msg line) line)
 
-  (defun mu4e~headers-field-apply-basic-properties (msg field val width)
-    (cl-case field
-          (:subject
-           (propertize
-            (concat
-             (mu4e~headers-thread-prefix (mu4e-message-field msg :thread))
-             (truncate-string-to-width val 600))
-            'face
-            (let ((flags (mu4e-message-field msg :flags)))
-              (cond
-               ((memq 'trashed flags) 'mu4e-trashed-face)
-               ((memq 'draft flags) 'mu4e-draft-face)
-               ((or (memq 'unread flags) (memq 'new flags))
-                'mu4e-unread-face)
-               ((memq 'flagged flags) 'mu4e-flagged-face)
-               ((memq 'replied flags) 'mu4e-replied-face)
-               ((memq 'passed flags) 'mu4e-forwarded-face)
-               (t 'mu4e-header-face)))))
-          (:thread-subject
-           (propertize
-            (mu4e~headers-thread-subject msg)
-            'face 'mu4e-header-subject-face))
-          ((:maildir :path :message-id) val)
-          ((:to :from :cc :bcc)
-           (propertize
-            (mu4e~headers-contact-str val)
-            'face 'mu4e-header-from-face))
-          (:from-or-to (mu4e~headers-from-or-to msg))
-          (:date
-           (propertize
-            (format-time-string mu4e-headers-date-format val)
-            'face 'mu4e-header-date-face))
-          (:mailing-list (mu4e~headers-mailing-list val))
-          (:human-date
-           (propertize
-            (mu4e~headers-human-date msg)
-            'help-echo (format-time-string
-                        mu4e-headers-long-date-format
-                        (mu4e-msg-field msg :date))
-            'face 'mu4e-header-date-face))
-          (:flags
-           (propertize (mu4e~headers-flags-str val)
-                       'help-echo (format "%S" val)
-                       'face 'font-lock-type-face))
-          (:tags
-           (propertize
-            (mapconcat 'identity val ", ")
-            'face 'font-lock-builtin-face))
-          (:size (mu4e-display-size val))
-          (t (mu4e~headers-custom-field msg field)))))
+;;   (defun mu4e~headers-field-apply-basic-properties (msg field val width)
+;;     (cl-case field
+;;       (:subject
+;;        (propertize
+;;         (concat
+;;          (mu4e~headers-thread-prefix (mu4e-message-field msg :thread))
+;;          (truncate-string-to-width val 600))
+;;         'face
+;;         (let ((flags (mu4e-message-field msg :flags)))
+;;           (cond
+;;            ((memq 'trashed flags) 'mu4e-trashed-face)
+;;            ((memq 'draft flags) 'mu4e-draft-face)
+;;            ((or (memq 'unread flags) (memq 'new flags))
+;;             'mu4e-unread-face)
+;;            ((memq 'flagged flags) 'mu4e-flagged-face)
+;;            ((memq 'replied flags) 'mu4e-replied-face)
+;;            ((memq 'passed flags) 'mu4e-forwarded-face)
+;;            (t 'mu4e-header-face)))))
+;;       (:thread-subject
+;;        (propertize
+;;         (mu4e~headers-thread-subject msg)
+;;         'face 'mu4e-header-subject-face))
+;;       ((:maildir :path :message-id) val)
+;;       ((:to :from :cc :bcc)
+;;        (propertize
+;;         (mu4e~headers-contact-str val)
+;;         'face 'mu4e-header-from-face))
+;;       (:from-or-to (mu4e~headers-from-or-to msg))
+;;       (:date
+;;        (propertize
+;;         (format-time-string mu4e-headers-date-format val)
+;;         'face 'mu4e-header-date-face))
+;;       (:mailing-list (mu4e~headers-mailing-list val))
+;;       (:human-date
+;;        (propertize
+;;         (mu4e~headers-human-date msg)
+;;         'help-echo (format-time-string
+;;                     mu4e-headers-long-date-format
+;;                     (mu4e-msg-field msg :date))
+;;         'face 'mu4e-header-date-face))
+;;       (:flags
+;;        (propertize (mu4e~headers-flags-str val)
+;;                    'help-echo (format "%S" val)
+;;                    'face 'font-lock-type-face))
+;;       (:tags
+;;        (propertize
+;;         (mapconcat 'identity val ", ")
+;;         'face 'font-lock-builtin-face))
+;;       (:size (mu4e-display-size val))
+;;       (t (mu4e~headers-custom-field msg field)))))
 #+end_src
 
 Note that the actual mail accounts are set in ~private.el~.
 
 #+begin_src elisp
-(use-package! mu4e-contrib)
+;; (use-package! mu4e-contrib)
 #+end_src
 
 ** Thread folding
 #+begin_src elisp
-(use-package! mu4e-thread-folding
-  :config
-    ; The prefix string is displayed over the header line and it is thus recommended to have an empty field at the start of an header line. Have a look at mu4e-headers-fields.
-  (add-to-list 'mu4e-header-info-custom
-               '(:empty . (:name "Empty"
-                           :shortname ""
-                           :function (lambda (msg) "  "))))
-  (setq mu4e-headers-fields '((:empty         .    2)
-                              ;; (:flags         .    6)
-                              (:from          .   22)
-                              (:mailing-list  .   10)
-                              (:human-date    .   12)
-                              (:subject       .   nil))))
+;; (use-package! mu4e-thread-folding
+;;   :config
+;;     ; The prefix string is displayed over the header line and it is thus recommended to have an empty field at the start of an header line. Have a look at mu4e-headers-fields.
+;;   (add-to-list 'mu4e-header-info-custom
+;;                '(:empty . (:name "Empty"
+;;                            :shortname ""
+;;                            :function (lambda (msg) "  "))))
+;;   (setq mu4e-headers-fields '((:empty         .    2)
+;;                               ;; (:flags         .    6)
+;;                               (:from          .   22)
+;;                               (:mailing-list  .   10)
+;;                               (:human-date    .   12)
+;;                               (:subject       .   nil))))
 #+end_src
 
 ** Sync mail
@@ -863,30 +1081,39 @@ Requirements: [[https://github.com/jgm/citeproc][citeproc]]
 (use-package! biblio)
 #+end_src
 
-Set bibliography directory
 #+begin_src elisp
-(defvar my/bibs '("~/bib/references.bib"))
+
+(use-package! ebib-biblio
+  :after (ebib biblio)
+  :bind (:map ebib-index-mode-map
+         ("B" . ebib-biblio-import-doi) ;; Press 'B' in Ebib to import by DOI
+         :map biblio-selection-mode-map
+         ("e" . ebib-biblio-selection-import))) ;; Press 'e' to import selected
 #+end_src
 
 #+begin_src elisp
 (use-package! citar
-  :config
-  (setq citar-symbols
-        `((file . (,(all-the-icons-icon-for-file "foo.pdf" :face 'all-the-icons-dred) .
-                   ,(all-the-icons-icon-for-file "foo.pdf" :face 'citar-icon-dim)))
-          (note . (,(all-the-icons-icon-for-file "foo.txt") .
-                   ,(all-the-icons-icon-for-file "foo.txt" :face 'citar-icon-dim)))
-          (link .
-                (,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'all-the-icons-dpurple) .
-                 ,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'citar-icon-dim)))))
-  ;; Here we define a face to dim non 'active' icons, but preserve alignment
-  (defface citar-icon-dim
-    '((((background dark)) :foreground "#282c34")
-      (((background light)) :foreground "#fafafa"))
-    "Face for obscuring/dimming icons"
-    :group 'all-the-icons-faces)
+  ;;   :config
+  ;;   ;; (setq citar-symbols
+  ;;   ;;       `((file . (,(all-the-icons-icon-for-file "foo.pdf" :face 'all-the-icons-dred) .
+  ;;   ;;                  ,(all-the-icons-icon-for-file "foo.pdf" :face 'citar-icon-dim)))
+  ;;   ;;         (note . (,(all-the-icons-icon-for-file "foo.txt") .
+  ;;   ;;                  ,(all-the-icons-icon-for-file "foo.txt" :face 'citar-icon-dim)))
+  ;;   ;;         (link .
+  ;;   ;;               (,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'all-the-icons-dpurple) .
+  ;;   ;;                ,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'citar-icon-dim)))))
+  ;;   ;; ;; Here we define a face to dim non 'active' icons, but preserve alignment
+  ;;   ;; (defface citar-icon-dim
+  ;;   ;;   '((((background dark)) :foreground "#282c34")
+  ;;   ;;     (((background light)) :foreground "#fafafa"))
+  ;;   ;;   "Face for obscuring/dimming icons"
+  ;;   ;;   :group 'all-the-icons-faces)
 
-  (setq! citar-bibliography '("~/bib/references.bib")))
+  :custom
+  (citar-bibliography '("~/Documents/research/references.bib"))
+  (citar-library-paths '("~/Documents/research/papers/"))
+  (citar-notes-paths '("~/Documents/research/notes"))
+  )
 #+end_src
 
 * Vertico
@@ -897,19 +1124,486 @@ Set bibliography directory
   )
 #+end_src
 * Languages
-* Code review
+** Rust
+*** Debugging
+TODO: changed to dape
+#+begin_src elisp
+;; (use-package! dap-mode
+;;   :config
+;;   (with-eval-after-load 'lsp-rust
+;;     (require 'dap-cpptools))
+;;   (with-eval-after-load 'dap-cpptools
+;;     ;; Add a template specific for debugging Rust programs.
+;;     ;; It is used for new projects, where I can M-x dap-edit-debug-template
+;;     (dap-register-debug-template "Rust::CppTools Run Configuration"
+;;                                  (list :type "cppdbg"
+;;                                        :request "launch"
+;;                                        :name "Rust::Run"
+;;                                        :MIMode "gdb"
+;;                                        :miDebuggerPath "rust-gdb"
+;;                                        :environment []
+;;                                        :args   []
+;;                                        :program "${workspaceFolder}/target/debug/libldp_dynamic_drivetimes.rlib"
+;;                                        :cwd "${workspaceFolder}"
+;;                                        :console "external"
+;;                                        :dap-compilation "cargo build"
+;;                                        :dap-compilation-dir "${workspaceFolder}")))
+;;   (with-eval-after-load 'dap-mode
+;;     (setq dap-default-terminal-kind "integrated")
+;;     (dap-auto-configure-mode +1))
+;;   )
+#+end_src
+
+*** Set backtracing
+#+begin_src elisp
+(use-package! rustic
+  :config
+  (setq rustic-compile-backtrace 1)
+  (setq rustic-format-on-save t)
+  )
+#+end_src
+
+Fix a bug in rustic
+
+#+begin_src elisp
+(after! rustic
+  ;; (defun my-rustic-beginning-of-defun-ts (arg)
+  ;;   "Use tree-sitter for defun navigation instead of the broken legacy function."
+  ;;   (interactive "p")
+  ;;   (treesit-beginning-of-defun arg))
+
+  (advice-add #'rustic-beginning-of-defun :override #'treesit-beginning-of-defun))
+#+end_src
+
+*** Separedit
+#+begin_src elisp
+(use-package! separedit
+  :config
+  (setq separedit-continue-fill-mode 't)
+  (add-hook 'separedit-buffer-creation-hook #'auto-fill-mode)
+  (progn
+    (define-key prog-mode-map (kbd "C-c '") #'separedit)
+    (setq separedit-default-mode 'markdown-mode)))
+#+end_src
+
+** Python
+*** Poetry & lsp-mode
+Pyright is able to work with the env of poetry when it is in the somewhere in the current project directory. Therefore, we have to set in-project virtual environments in poetry:
+#+begin_src shell :tangle no
+poetry config virtualenvs.in-project true
+#+end_src
+
+**** Todo it might be possible to set the environment pyright/lsp uses. Then we can stop using in-project venvs!
+
+#+begin_src elisp
+;; (use-package! poetry
+;;   :config
+;;   (poetry-tracking-mode)
+;;   (setq poetry-tracking-strategy 'projectile)
+;;   )
+
+;; (use-package! python
+;;   :mode "python-mode"
+;;   :after (poetry)
+;;   :hook
+;;   (python-mode
+;;    . (lambda () (when (poetry-venv-exist-p)
+;;                   (setq-local lsp-pyls-server-command '("poetry" "run" "pyright"))
+;;                   )
+;;        (lsp-deferred)
+;;        )
+;;   )
+;;   :config
+;;   (setq python-indent-guess-indent-offset nil))
+
+;; (use-package! pyvenv
+;;   :hook (after-init . pyvenv-mode)
+;;   )
+#+end_src
+*** Debugging
+#+begin_src elisp
+;; (use-package! dap-python
+;;   :config
+;;   (setq dap-python-debugger 'debugpy))
+#+end_src
+
+* Diff
+#+begin_src elisp
+(use-package! diff-mode
+  :custom
+  (diff-font-lock-prettify t)
+  )
+#+end_src
+
+* Magit
+#+begin_src elisp
+(use-package! difftastic
+  ;; :demand t
+  :bind (:map magit-blame-read-only-mode-map
+              ("D" . difftastic-magit-show)
+              ("S" . difftastic-magit-show))
+  :config
+  (eval-after-load 'magit-diff
+    '(transient-append-suffix 'magit-diff '(-1 -1)
+       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
+        ("S" "Difftastic show" difftastic-magit-show)]))
+  (setopt magit-format-file-function #'magit-format-file-nerd-icons))
+#+end_src
+
+#+begin_src elisp
+(use-package! magit-syntax-highlight
+  :hook ((magit-syntax-highlight-mode . magit-mode)))
+#+end_src
+
+** Code review
 Use passwords configured for forge.
 #+begin_src elisp
 (use-package! code-review
+  ;; :custom
+  ;; (code-review-auth-login-marker 'forge)
   :config
   (setq code-review-auth-login-marker 'forge)
   (add-hook 'code-review-mode-hook
             (lambda ()
-              (persp-add-buffer (current-buffer)))))
+              (persp-add-buffer (current-buffer))))
+  )
 #+end_src
 
-* Private
-Include private config, containing things like email account configuration etc.
 #+begin_src elisp
-(load (doom-path doom-private-dir "private.el"))
+;;; Forge interface
+  (defmacro code-review-ediff-buffers (quit &rest spec)
+    (declare (indent 1))
+    (let ((fn (if (= (length spec) 3) 'ediff-buffers3 'ediff-buffers))
+          (char ?@)
+          get make kill)
+      (pcase-dolist (`(,g ,m) spec)
+        (let ((b (intern (format "buf%c" (cl-incf char)))))
+          (push `(,b ,g) get)
+          (push `(if ,b
+                     (if magit-ediff-use-indirect-buffers
+                         (prog1
+                             (make-indirect-buffer
+                              ,b (generate-new-buffer-name (buffer-name ,b)) t)
+                           (setq ,b nil))
+                       ,b)
+                   ,m)
+                make)
+          (push `(unless ,b
+                   (ediff-kill-buffer-carefully
+                    ,(intern (format "ediff-buffer-%c" char))))
+                kill)))
+      (setq get  (nreverse get))
+      (setq make (nreverse make))
+      (setq kill (nreverse kill))
+      `(let ((conf (current-window-configuration))
+             ,@get)
+         (,fn
+          ,@make
+          (list (lambda ()
+                  (setq-local
+                   ediff-quit-hook
+                   (list ,@(and quit (list quit))
+                         (lambda ()
+                           ,@kill
+                           (let ((magit-ediff-previous-winconf conf))
+                             (run-hooks 'magit-ediff-quit-hook)))))))
+          ',fn))))
+
+  (defun code-review-ediff-compare (revA revB fileA fileB)
+    "Compare REVA:FILEA with REVB:FILEB using Ediff.
+FILEA and FILEB have to be relative to the top directory of the
+repository.  If REVA or REVB is nil, then this stands for the
+working tree state.
+If the region is active, use the revisions on the first and last
+line of the region.  With a prefix argument, instead of diffing
+the revisions, choose a revision to view changes along, starting
+at the common ancestor of both revisions (i.e., use a \"...\"
+range)."
+    (interactive)
+    (code-review-ediff-buffers nil
+                               ((if revA (magit-get-revision-buffer revA fileA) (get-file-buffer    fileA))
+                                (if revA (magit-find-file-noselect  revA fileA) (find-file-noselect fileA)))
+                               ((if revB (magit-get-revision-buffer revB fileB) (get-file-buffer    fileB))
+                                (if revB (magit-find-file-noselect  revB fileB) (find-file-noselect fileB)))))
+
+  (defun code-review-ediff-compare-file-at-point ()
+    (interactive)
+    (let* ((forge-pr
+            (-first-item
+             (mapcar
+              (lambda (row)
+                (closql--remake-instance 'forge-pullreq (forge-db) row))
+              (forge-sql
+               [:select $i1 :from pullreq
+                :join repository :on (= repository:id pullreq:repository)
+                :where (and (= repository:owner "eval-all-software")
+                            (= repository:name "tempo")
+                            (= pullreq:number 107))]
+               (vconcat (closql--table-columns (forge-db) 'pullreq t))))))
+           (default-directory "~/code/tempo"))
+      (forge-checkout-pullreq forge-pr)
+      (code-review-ediff-compare "main" "pr-test" "docker-compose.yml" "docker-compose.yml")))
+
+#+end_src
+
+#+begin_src elisp
+(defun code-review-ediff-compare-file-at-point ()
+  (interactive)
+  (let* ((section (magit-current-section))
+         (file (cond
+                ((magit-file-section-p section)
+                 (oref section value))
+                ((magit-hunk-section-p section)
+                 (alist-get 'path (oref section value)))
+                (t (user-error "not in magit-section"))))
+         (pr (code-review-db-get-pullreq))
+         (base-upstream-branch (magit-get-upstream-branch (oref pr base-ref-name)))
+         ;; assume same remote with base
+         (remote (car (split-string base-upstream-branch "/"))))
+    (magit-ediff-compare base-upstream-branch
+                         (format "%s/%s" remote (oref pr head-ref-name))
+                         file file)))
+
+#+end_src
+
+# * Private
+# Include private config, containing things like email account configuration etc.
+# #+begin_src elisp
+# (load (doom-path doom-private-dir private."el"))
+# #+end_src
+* git-review
+#+begin_src elisp
+(use-package! git-review
+  :bind (:map git-review-mode-map (("$$" . git-review-jinx-correct)
+                                   ("$n" . git-review-jinx-next)
+                                   ("$p" . git-review-jinx-previous)))
+  :config
+  (git-review-db-initialize)
+  (require 'git-review-jinx)
+  (require 'git-review-magit)
+  (advice-add #'split-window-sensibly :around #'git-review--set-split-tresholds))
+#+end_src
+* PR-review
+#+begin_src elisp
+(use-package! pr-review
+  :commands (pr-review-notification)
+  :bind (:map pr-review-mode-map (("RET" . pr-review-context-comment)) )
+  :config
+  (map! :leader
+        :desc "PR notifications"
+        "r" #'pr-review-notification)
+  (map! :after pr-review
+   :map pr-review-mode-map
+   "RET" #'pr-review-context-comment
+        (:prefix ("g" . "pr-review")
+                 "C" #'pr-review-comment
+                 "c" #'pr-review-context-comment
+                 "e" #'pr-review-context-edit
+  "a" #'pr-review-
+                 "S" #'pr-review-submit-review
+                 ))
+  )
+#+end_src
+
+* git-link
+#+begin_src elisp
+(use-package! git-link)
+#+end_src
+* Envrc
+#+begin_src elisp
+(use-package! envrc
+  :config
+  (envrc-global-mode))
+#+end_src
+* Slack
+
+** define function to get tokens
+#+begin_src elisp
+(defun my/get-slack-credentials (workspace-url)
+  "Directly lookup credentials for WORKSPACE-URL (e.g., \"https://company.slack.com\")."
+  (let* ((json-object-type 'hash-table)
+         (json-array-type 'list)
+         (json-key-type 'keyword)
+         ;; Run the slacktokens command and parse output
+         (data (json-read-from-string (shell-command-to-string "/home/luca/scripts/slacktokens/get_slack_tokens.py")))
+         ;; 1. Extract the shared 'd' cookie
+         (cookie (gethash :value (gethash :cookie data)))
+         ;; 2. Direct lookup in the tokens hash-table using the URL key
+         (ws-data (gethash (intern (concat ":" workspace-url)) (gethash :tokens data)))
+         (token (when ws-data (gethash :token ws-data))))
+    (message "Type: %s, Key: %S" (type-of (gethash :tokens data)) (gethash :tokens data))
+    (message "WS Type: %s, Key: %S" (type-of ws-data) ws-data)
+    (message "Token Type: %s, Key: %S" (type-of token) token)
+    (if (and token cookie)
+        (list token cookie)
+      (error "Could not find token for %s. Ensure the URL is correct and you are logged in." workspace-url))))
+
+
+(defun my/slack-refresh-team-settings (team-display-name workspace-url)
+  "Refresh a specific team using its official Workspace URL."
+  (cl-destructuring-bind (token cookie) (my/get-slack-credentials workspace-url)
+    (slack-register-team
+     :name team-display-name
+     :default t
+     :disable-block-format t          ; https://github.com/yuya373/emacs-slack/issues/484
+     :animate-image t
+     :full-and-display-names t 
+     :token token
+     :cookie cookie)))
+
+(defun my/slack-auto-refresh-wrapper (&rest _)
+  "Automated trigger that runs only once."
+  (unless (bound-and-true-p my/slack-refreshed-p)
+    (setq my/slack-refreshed-p t) ; Set flag immediately
+    (condition-case err
+        (my/slack-refresh-team-settings "Postnl-Engineering" "https://postnl-engineering.slack.com/")
+      (error
+       (setq my/slack-refreshed-p nil) ; Reset on error so you can try again
+       (signal (car err) (cdr err))))))
+
+(defun my/slack-start ()
+  (interactive)
+  (my/slack-refresh-team-settings "PostNL-Engineering" "https://postnl-engineering.slack.com/")
+  (slack-start))
+#+end_src
+
+** Package
+#+begin_src elisp
+(use-package! slack
+  :commands (slack-start)
+  :hook ((slack-mode . visual-line-mode)
+         (slack-buffer-mode . visual-line-mode))
+  :custom
+  (slack-buffer-emojify t)
+  (slack-prefer-current-team t)
+  (lui-time-stamp-position 'right)
+  :init
+  (advice-add 'slack-start :before #'my/slack-auto-refresh-wrapper) 
+  :config
+  (evil-define-key 'normal slack-info-mode-map
+    ",u" 'slack-room-update-messages)
+  (evil-define-key 'normal slack-mode-map
+    ",c" 'slack-buffer-kill
+    ",ra" 'slack-message-add-reaction
+    ",rr" 'slack-message-remove-reaction
+    ",rs" 'slack-message-show-reaction-users
+    ",pl" 'slack-room-pins-list
+    ",pa" 'slack-message-pins-add
+    ",pr" 'slack-message-pins-remove
+    ",mm" 'slack-message-write-another-buffer
+    ",me" 'slack-message-edit
+    ",md" 'slack-message-delete
+    ",u" 'slack-room-update-messages
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel
+    "\C-n" 'slack-buffer-goto-next-message
+    "\C-p" 'slack-buffer-goto-prev-message)
+  (evil-define-key 'normal slack-edit-message-mode-map
+    ",k" 'slack-message-cancel-edit
+    ",s" 'slack-message-send-from-buffer
+    ",2" 'slack-message-embed-mention
+    ",3" 'slack-message-embed-channel)
+  (map! :leader
+        (:prefix ("S" . "slack")
+                 "t" #'my/slack-start
+                 "S" #'slack-select-rooms
+                 "u" #'slack-select-unread-rooms
+                 "i" #'slack-im-select))
+  )
+#+end_src
+
+#+begin_src elisp
+(use-package! alert
+  :config
+  (setq alert-default-style 'libnotify))
+#+end_src
+
+* Aws
+#+begin_src elisp
+;; (use-package! aws-mode
+;;  :custom
+;;   (aws-vault t) ;; when t use aws-vault cmd to get into aws session
+;;   (aws-output "json") ;; optional: yaml, json, text (default: yaml)
+;;   (aws-organizations-account "root")) ;; profile of organizations account. organizations commands are automatically executed against this account, when specified
+
+;; (use-package aws-evil
+;;   :after (aws-mode evil)
+;;   :load-path "~/.emacs.d/packages/awscli")
+#+end_src
+
+* Themes
+#+begin_src elisp
+(use-package! ef-themes)
+#+end_src
+
+* Tidal Cycles
+#+begin_src elisp
+(use-package! tidal
+  :custom
+  (tidal-boot-script-path "~/Music/tidal/BootTidal.hs"))
+#+end_src
+
+* Music player
+#+begin_src elisp
+(use-package! emms
+  :custom
+  (emms-player-mpd-server-name "192.168.2.5")
+  (emms-player-mpd-server-port "6600")
+  )
+#+end_src
+
+#+begin_src elisp
+(use-package! mpdel
+  :custom
+  (libmpdel-hostname "192.168.2.5") ; Replace with your server's IP if remote
+  (libmpdel-port 6600)           ; Default MPD port
+  )
+
+#+end_src
+
+* Shipit
+#+begin_src elisp
+;; (use-package! shipit
+;;   :after magit
+;;   :config
+;;   (shipit-init)
+;;   (setq shipit-github-token
+;;         (let ((match (car (auth-source-search :host "api.github.com"))))
+;;           (if match
+;;               (let ((secret (plist-get match :secret)))
+;;                 (if (functionp secret)
+;;                     (funcall secret)
+;;                   secret))
+;;             (message "Warning: shipit-github-token not found in auth-sources")))))
+#+end_src
+
+* LLM
+** Agent-shell
+#+begin_src elisp
+(use-package! acp)
+
+(use-package! agent-shell
+  :config
+  (evil-define-key 'normal agent-shell-mode-map (kbd "za") 'agent-shell-ui-toggle-block))
+#+end_src
+
+* Github projects
+#+begin_src elisp
+(use-package! gh-projects
+  :commands (gh-projects gh-projects-browse gh-projects-dispatch)
+  :after forge
+  :custom
+  (gh-projects-default-owner "Postnl-Production")
+  :config
+  (setq gh-projects-default-owner "Postnl-Production")
+  (setq gh-projects-default-number 2)
+  (setq gh-projects-use-color t)
+  ;; (setq gh-projects-local-repo-search-paths '("~/Projects"))
+  (setq gh-projects-quick-actions
+   '(("c" "Claim"
+      ((assign-self)
+       (set-status "🔧 In progress")))
+     ("r" "Ready for review"
+      ((set-status "👀 Review")
+       (add-label "ready-for-review"))))))
 #+end_src
