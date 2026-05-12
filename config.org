@@ -13,8 +13,7 @@ This is probably not the Emacs way to go. Come back to this later
 
 Use K&R indentation style for ~c-mode~.
 #+begin_src elisp
-(use-package! cc-mode
-  :config
+(after! cc-mode
   (add-to-list 'c-default-style '(c-mode . "k&r")))
 #+end_src
 
@@ -32,8 +31,7 @@ Use K&R indentation style for ~c-mode~.
 ** Emoji
 Remove the emojify global mode set by doom
 #+begin_src elisp
-(use-package! emojify
-  :config
+(after! emojify
   (remove-hook 'doom-first-buffer-hook 'global-emojify-mode))
 #+end_src
 
@@ -47,7 +45,6 @@ Set theme and blink modeline on bell.
 #+begin_src elisp
 (use-package! doom-themes
   :config
-  (setq doom-acme-brighter-modeline t)
   (load-theme 'modus-vivendi t)
   (doom-themes-visual-bell-config)
   (doom-themes-org-config))
@@ -67,7 +64,7 @@ Set dashboard splash to old emacs logo, because it's nicer
 ** Font
 *** Family
 Doom exposes five (optional) variables for controlling fonts in Doom. Here are the three important ones:
-+ ~doom-font~
++ ~doom-font~ doom-font
 + ~doom-variable-pitch-font~
 + ~doom-big-font~ -- used for ~doom-big-font-mode~; use this for presentations or streaming.
 
@@ -75,7 +72,8 @@ They all accept either a font-spec, font string ("Input Mono-12"), or solved fon
 #+begin_src elisp
 (setq doom-font (font-spec :family "Input Mono" :size 9.5 :weight 'book)
       doom-unicode-font (font-spec :family "Symbola" :size 14.0)
-      doom-variable-pitch-font (font-spec :family "Noto Sans" :size 11.0 :weight 'normal))
+      doom-variable-pitch-font
+      (font-spec :family "PT Sans" :size 11.0))
 #+end_src
 
 *** Truncate ellipsis
@@ -92,6 +90,7 @@ We add the following fixed-faces:
 - Org-scheduled, to fix org-habit graph alignment somewhat
 #+begin_src elisp
 (use-package! mixed-pitch
+  :defer t
   :config
   (set-face-attribute 'default nil :weight 'book)
   ;; This breaks font scaling. But otherwise changing fixed-pitch height doesn't work
@@ -149,9 +148,6 @@ We add the following fixed-faces:
          (gfm-mode . mixed-pitch-mode)))
 #+end_src
 
-#+RESULTS:
-| +lookup--init-gfm-mode-handlers-h | mixed-pitch-mode |
-
 ** Line numbers
 Use absolute line numbering
 #+begin_src elisp
@@ -162,6 +158,7 @@ Use absolute line numbering
 Enable line highlighting in dired buffers, but disable it otherwise.
 #+begin_src elisp
 (use-package! hl-line
+  :defer t
   :hook
   ((dired-after-readin . hl-line-mode)
    (org-agenda-mode . hl-line-mode))
@@ -170,23 +167,14 @@ Enable line highlighting in dired buffers, but disable it otherwise.
 #+end_src
 
 ** Which-key
-Replace ~evil~ and ~evil--motion~ with ~.~ and ~.m~ respectively to shorten which-key list. It would be nice to use some unicode character here, like ~ⓔ~, but this messes up which-keys collumns.
+Replace ~evil~ and ~evil--motion~ with ~.~ and ~.m~ respectively to shorten which-key list. It would be nice to use some unicode character here, like ~ⓔ~, but this messes up which-keys columns.
 #+begin_src elisp
-(use-package! which-key
-  :config
+(after! which-key
   (setq which-key-idle-delay 0.5)
   (pushnew!
    which-key-replacement-alist
    '(("" . "\\`+?evil[-:]?\\(?:a-\\)?\\(.*\\)") . (nil . ".-\\1"))
    '(("\\`g s" . "\\`evilem--?motion-\\(.*\\)") . (nil . ".m-\\1"))))
-#+end_src
-
-** Beacon
-Show beacon at cursor position on large ju
-#+begin_src elisp
-(use-package! beacon
-  :init
-  (beacon-mode 1))
 #+end_src
 
 ** Olivetti
@@ -199,16 +187,6 @@ Center the text in buffers and add a nice margin for a better reading and writin
 ;;          (LaTeX-mode . olivetti-mode)))
 #+end_src
 
-** Syntax highlighting
-Enable ~tree-sitter-mode~ globally for richer syntax highlighting.
-#+begin_src elisp
-(use-package! tree-sitter
-  :config
-  (require 'tree-sitter-langs)
-  (global-tree-sitter-mode)
-  (add-hook 'tree-sitter-after-on-hook #'tree-sitter-hl-mode))
-#+end_src
-
 ** Misc
 *** Set the scroll offset
 #+begin_src elisp
@@ -219,8 +197,7 @@ Enable ~tree-sitter-mode~ globally for richer syntax highlighting.
 Stripe buffer rows where it makes sense
 #+begin_src elisp
 (use-package! stripe-buffer
-  :config
-  ;; (set-face-attribute 'stripe-highlight nil :background "white")
+  :defer t
   :hook ((org-mode . turn-on-stripe-table-mode)
          (dired-mode . stripe-listify-buffer)))
 #+end_src
@@ -241,6 +218,7 @@ Enable blinking cursor
 ** Folding
 #+begin_src elisp
 (use-package! treesit-fold
+  :defer t
   :config
   (map! :leader
         :desc "Fold"
@@ -257,50 +235,30 @@ Enable blinking cursor
 
 * Github
 #+begin_src elisp
-(use-package! consult-gh
-  :after (consult pr-review embark)
-  :custom
-  (consult-gh-repo-preview-major-mode nil) ; show readmes in their original format
-  (consult-gh-preview-major-mode 'org-mode) ; use 'org-mode for editing comments, commit messages, ...
-  :config
-  )
+;; (use-package! consult-gh
+;;   :after (consult pr-review embark)
+;;   :custom
+;;   (consult-gh-repo-preview-major-mode nil) ; show readmes in their original format
+;;   (consult-gh-preview-major-mode 'org-mode) ; use 'org-mode for editing comments, commit messages, ...
+;;   )
 
-(use-package! consult-gh-with-pr-review
-  :config
-  (consult-gh-with-pr-review-mode +1))
+;; (use-package! consult-gh-with-pr-review
+;;   :config
+;;   (consult-gh-with-pr-review-mode +1))
 
-(use-package! consult-gh-forge
-  :config
-  (consult-gh-forge-mode +1)
-  (setq consult-gh-forge-timeout-seconds 20))
+;; (use-package! consult-gh-forge
+;;   :config
+;;   (consult-gh-forge-mode +1)
+;;   (setq consult-gh-forge-timeout-seconds 20))
 
 
-(use-package! consult-gh-transient
-  :config
-  (with-eval-after-load 'forge
-    (transient-append-suffix 'forge-dispatch 'forge-add-repository
-      '("g" "More actions (gh)" consult-gh-transient))))
+;; (use-package! consult-gh-transient
+;;   :config
+;;   (with-eval-after-load 'forge
+;;     (transient-append-suffix 'forge-dispatch 'forge-add-repository
+;;       '("g" "More actions (gh)" consult-gh-transient))))
 #+end_src
 
-#+RESULTS:
-: t
-
-* Copilot
-#+begin_src elisp
-;; accept completion from copilot and fallback to company
-;; (use-package! copilot
-;;   ;; :hook (prog-mode . copilot-mode)
-;;   :bind (:map copilot-completion-map
-;;               ("<tab>" . 'copilot-accept-completion)
-;;               ("TAB" . 'copilot-accept-completion)
-;;               ("C-TAB" . 'copilot-accept-completion-by-word)
-;;               ("C-<tab>" . 'copilot-accept-completion-by-word)))
-
-#+end_src
-* BSPWM
-#+begin_src elisp
-(use-package! emacs-bspwm-integration)
-#+end_src
 * Evil
 ** Evil goggles
 #+begin_src elisp
@@ -321,6 +279,7 @@ Enable blinking cursor
 Bind =C-;= to escape from (almost) everywhere. ~evil-escape~ is a package that provides a function ~evil-escape~ that does exactly this. As I don't like evil-escape-key-sequences, where evil-escape is called after a quick succession of two specific keypresses, inhibit evil-escape itself.
 #+begin_src elisp
 (use-package! evil-escape
+  :commands evil-escape
   :config
   (setq evil-escape-inhibit t)
   (global-set-key (kbd "C-;") 'evil-escape))
@@ -331,71 +290,60 @@ Make evil work well with parenthesis/smartparens. We opt for ~evil-cleverparens~
 (~lispy~ + )~lispyville~ provides similar functionality, but I don't like the non-vim way of lispy-editting, (modal switches are triggered by character at point instead of key presses).
 #+begin_src elisp
 (use-package! evil-cleverparens
-  :hook ((clojure-mode . evil-cleverparens-mode)
-         (lisp-mode . evil-cleverparens-mode)
-         (emacs-lisp-mode . evil-cleverparens-mode)))
+  :after (evil smartparens)
+  :hook ((rust-mode rustic-mode c-mode c++-mode clojure-mode lisp-mode emacs-lisp-mode) . evil-cleverparens-mode)
+  :config
+  (setq evil-cleverparens-use-additional-movement-keys t))
 #+end_src
 
 As parenthesis are managed quite nicely now, we can enable smartparens-strict-mode!
 #+begin_src elisp
 (use-package! smartparens
+  :commands (smartparens-strict-mode smartparens-mode)
   :hook ((clojure-mode . smartparens-strict-mode)
          (lisp-mode . smartparens-strict-mode)
          (emacs-lisp-mode . smartparens-strict-mode)
          (prog-mode . smartparens-mode))
   :config
+  (require 'smartparens-config)
+  ;; Disable single-quote auto-pairing in Rust modes to prevent 'a' lifetimes issue 
+  (sp-local-pair '(rust-mode rustic-mode) "'" nil :actions nil)
   (map!
    "C-l" #'sp-forward-slurp-sexp
    "M-h" #'sp-backward-slurp-sexp
    "C-h" #'sp-forward-barf-sexp
    "M-l" #'sp-backward-barf-sexp
-   )
-  )
+   ))
 #+end_src
 
 * Language Server
 ** LSP
-Disable lsp's lenses for now, as they clutter the buffer too much.
-#+begin_src elisp
-;; (use-package! lsp-mode
-;;   :config
-;;   (setq lsp-lens-enable nil))
-#+end_src
-
 #+begin_src elisp
 (add-to-list 'exec-path (expand-file-name "/usr/lib/rustup/bin"))
 #+end_src
 
 ** Eglot
 #+begin_src elisp
-(use-package! eglot
-  :config
+(after! eglot
   (add-to-list 'eglot-ignored-server-capabilities :inlayHintProvider)
   (add-to-list 'eglot-server-programs
                `((rust-ts-mode rust-mode) . ("rust-analyzer" :initializationOptions
                                              (:procMacro (:enable t)
                                               :cargo (:buildScripts (:enable t)
                                                       :features "local-search")))))
-  (add-to-list 'project-vc-extra-root-markers "Cargo.toml")
-  )
-;;   :hook ((rust-mode) . eglot-ensure)
-;;   :config (add-to-list 'eglot-server-programs
-;;                        `(rust-mode . ("rust-analyzer" :initializationOptions
-;;                                      ( :procMacro (:enable t)
-;;                                        :cargo ( :buildScripts (:enable t)
-;;                                                 :features "all"))))))
+  (add-to-list 'project-vc-extra-root-markers "Cargo.toml"))
 #+end_src
 
 Enable extensions.
 #+begin_src elisp
 (use-package! eglot-x
+  :after eglot
   :config
-      (with-eval-after-load 'eglot
-      (require 'eglot-x)
-      (eglot-x-setup)))
+      (eglot-x-setup))
 #+end_src
 
 Booster
+Disabled for now because released version does not support io only mode, and emacs >30 is faster with json parsing
 #+begin_src elisp
 ;; (use-package! eglot-booster
 ;;   :after eglot
@@ -404,8 +352,6 @@ Booster
 ;;   (eglot-booster-mode))
 #+end_src
 
-#+RESULTS:
-
 * LaTeX
 Query for master file.
 #+begin_src elisp
@@ -413,11 +359,30 @@ Query for master file.
   (setq TeX-master nil))
 #+end_src
 
+#+begin_src elisp
+(after! org
+  ;; Tell Org Mode to use latexmk with biber
+  (setq org-latex-pdf-process
+        '("latexmk -f -pdf -%latex -interaction=nonstopmode -output-directory=%o %f"))
+  (add-to-list 'exec-path "/usr/bin/vendor_perl")
+  (setenv "PATH" (concat "/usr/bin/vendor_perl:" (getenv "PATH")))
+  ;; Configure Org Mode default bibliography compiler (for newer Org versions)
+  (setq org-latex-bib-compiler "biber"))
+#+end_src
+
 ** Preview
 Set transparent color to background for latex preview.
 Scale down LaTeX previews a bit to match the used font.
 #+begin_src elisp
-(set-default 'preview-scale-function 0.9)
+(after! preview
+  ;; This configures dynamic scaling for BOTH AUCTeX and Org-mode
+  (setq preview-scale-function 'preview-scale-from-face))
+#+end_src
+
+#+begin_src elisp
+(after! org
+  ;; Specific only to Org-mode's traditional fallback processor
+  (plist-put org-format-latex-options :scale 0.9))
 #+end_src
 
 ** Fontify
@@ -435,135 +400,810 @@ Add missing LaTeX prettify sequences.
             (push '("\\land" . 8743) prettify-symbols-alist)))
 #+end_src
 * Org
-** General
+This section implements a category-based time blocking ("time theming") system
+for task management. The idea: instead of scheduling individual tasks into time
+slots, you assign /categories/ (Deep Work, Admin, Comms, etc.) to blocks of
+your day and work on tasks matching that category during the block.
+
+The org files are split into =~/org/work/= and =~/org/personal/= subdirectories.
+Custom agenda views show tasks grouped by category, and context switching lets
+you filter to work-only, personal-only, or everything.
+
+Expected directory structure:
+#+begin_example
+~/org/
+  work/
+    inbox.org        -- quick capture, triage later
+    tasks.org        -- categorised tasks (headings: Deep Work, Admin, Comms, Meetings)
+    timeblocks.org   -- scheduled time blocks with timestamps
+    projects.org     -- multi-step project trees
+  personal/
+    inbox.org
+    tasks.org
+    timeblocks.org
+  someday.org        -- ideas and deferred tasks
+  weekly-review.org  -- datetree of weekly reviews
+  templates/
+    weekly-review.org -- template for the weekly review capture
+#+end_example
+
+** Directory & Files
+Set ~org-directory~ before org loads (Doom requirement). All file references
+derive from it so changing the base directory is a single-point change.
+
 #+begin_src elisp
-(use-package! org
-  :init
-  (setq org-agenda-custom-commands
-        '(("h" "Daily habits"
-           ((agenda ""))
-           ((org-agenda-show-log t)
-            (org-agenda-ndays 7)
-            (org-agenda-log-mode-items '(state))
-            (org-agenda-skip-function '(org-agenda-skip-entry-if 'notregexp ":DAILY:"))))
-          ))
-  :config
-  ;; fix bug where [...] from isearch in minibuffer cancels my search
-  (setq org-fold-core-style 'overlays)
+(setq org-directory "~/org/")
+#+end_src
+
+Define the file lists used by agenda, capture, and refile. Kept as =defvar= so
+they can be overridden in =private.el= if needed.
+
+#+begin_src elisp
+(defvar my/work-files
+  (mapcar (lambda (f) (expand-file-name f (concat org-directory "work/")))
+          '("inbox.org" "tasks.org" "timeblocks.org" "projects.org"))
+  "Org files for the work context.")
+
+(defvar my/personal-files
+  (mapcar (lambda (f) (expand-file-name f (concat org-directory "personal/")))
+          '("inbox.org" "tasks.org" "timeblocks.org" "calendar.org"))
+  "Org files for the personal context.")
+
+(defvar my/all-files
+  (append my/work-files my/personal-files)
+  "All org agenda files (work + personal).")
+
+(defun my/work-file (name)
+  "Return the full path to a file in the work directory."
+  (expand-file-name name (concat org-directory "work/")))
+
+(defun my/personal-file (name)
+  "Return the full path to a file in the personal directory."
+  (expand-file-name name (concat org-directory "personal/")))
+#+end_src
+
+Start with all files visible in the agenda. Context switching (below) can
+narrow this at runtime.
+
+#+begin_src elisp
+(setq org-agenda-files my/all-files)
+#+end_src
+
+** TODO Keywords & Tags
+A single TODO sequence. ~WAITING~ logs a note on entry (the =@=) and a
+timestamp on exit (the =!=). ~DONE~ and ~CANCELLED~ log timestamps.
+
+#+begin_src elisp
+(after! org
+  (setq org-todo-keywords
+        '((sequence
+           "TODO(t)"
+           "NEXT(n)"
+           "WAITING(w@/!)"
+           "SOMEDAY(s)"
+           "|"
+           "DONE(d!)"
+           "CANCELLED(c@)"))))
+#+end_src
+
+Use Doom's built-in faces so keyword colours follow the active theme.
+
+#+begin_src elisp
+(after! org
+  (setq org-todo-keyword-faces
+        '(("TODO"      . +org-todo-todo)
+          ("NEXT"      . +org-todo-active)
+          ("WAITING"   . +org-todo-onhold)
+          ("SOMEDAY"   . +org-todo-onhold)
+          ("DONE"      . +org-todo-done)
+          ("CANCELLED" . +org-todo-cancel))))
+#+end_src
+
+Tags serve double duty: the /category/ tags (mutually exclusive via
+~:startgroup~) define your time-theme blocks, while /energy/ and /context/ tags
+help filter during planning. Only one category and one energy level can be set
+at a time.
+
+#+begin_src elisp
+(defvar my/categories
+  ;;  tag          label              icon  context     key
+  '(("DEEP"      "Deep Work"         "🧠"  work        ?d)
+    ("ADMIN"     "Admin"             "📬"  both        ?a)
+    ("COMMS"     "Comms"             "💬"  work        ?c)
+    ("CREATIVE"  "Creative"          "🎨"  personal        ?r)
+    ("MEETINGS"  "Meetings"          "📅"  work        ?m)
+    ("REVIEW"  "Review"          "👀"  work        ?e)
+    ("STORY"  "Story"          "✍🏻"  work        ?e)
+    ("LEARNING"  "Learning"          "📚"  both        ?l)
+    ("PERSONAL"  "Personal"          "🏠"  personal    ?p)
+    ("CLEANING"  "Cleaning"          "🧹"  personal    ?C)
+    ("WORKOUT"  "Workout"          "🧹"  personal    ?w)
+    ("FINANCE"   "Finance"           "💰"  personal    ?f)))
+
+;; Accessors
+(defun my/cat-tag     (c) (nth 0 c))
+(defun my/cat-label   (c) (nth 1 c))
+(defun my/cat-icon    (c) (nth 2 c))
+(defun my/cat-context (c) (nth 3 c))  ; 'work 'personal 'both
+(defun my/cat-key     (c) (nth 4 c))
+#+end_src
+
+#+begin_src elisp
+(defun my/categories-for-context (context)
+  "Return categories matching CONTEXT ('work, 'personal, or 'both)."
+  (seq-filter (lambda (c)
+                (memq (my/cat-context c) `(,context both)))
+              my/categories))
+#+end_src
+
+#+begin_src elisp
+(defun my/make-tag-alist ()
+  "Build org-tag-alist from my/categories."
+  (append
+   '((:startgroup . nil))
+   (mapcar (lambda (c)
+             (cons (my/cat-tag c) (my/cat-key c)))
+           my/categories)
+   '((:endgroup . nil))
+   ;; Energy levels and contexts — static, not dynamic
+   '((:startgroup . nil)
+     ("HIGH" . ?H) ("MED" . ?M) ("LOW" . ?L)
+     (:endgroup . nil)
+     ("@home" . ?h) ("@office" . ?o) ("@phone" . ?n))))
+#+end_src
+
+
+#+begin_src elisp
+
+(defun my/make-super-agenda-groups (context &optional order-offset)
+  "Build org-super-agenda groups for CONTEXT ('work, 'personal, 'both).
+Groups are ordered starting from ORDER-OFFSET (default 3, leaving
+room for NEXT at 1 and habits at 2)."
+  (let ((cats (if (eq context 'both)
+                  my/categories
+                (my/categories-for-context context)))
+        (offset (or order-offset 3)))
+    (seq-map-indexed
+     (lambda (c i)
+       (let* ((tag  (my/cat-tag c))
+              (icon (my/cat-icon c))
+              (label (my/cat-label c))
+              (ctx  (my/cat-context c))
+              (file-path (pcase ctx
+                           ('work     "work")
+                           ('personal "personal")
+                           ('both     nil))))  ; both = no file-path filter
+         (if file-path
+             `(:name ,(format "%s %s" icon label)
+                     :and (:tag ,tag :file-path ,file-path)
+                     :order ,(+ offset i))
+           `(:name ,(format "%s %s" icon label)
+                   :tag ,tag
+                   :order ,(+ offset i)))))
+     cats)))
+#+end_src
+
+
+Build dynamic capture templates from the category list. Work categories get
+filed under =work/tasks.org= with 1:00 effort default, personal categories
+under =personal/tasks.org= with 0:30. Static templates (inboxes, someday,
+weekly review, denote note) are prepended.
+
+#+begin_src elisp
+(defun my/make-capture-templates ()
+  "Build org-capture-templates from my/categories."
+  (let ((work-cats     (my/categories-for-context 'work))
+        (personal-cats (my/categories-for-context 'personal)))
+    (append
+     ;; ── Static entries ──────────────────────────────────
+     `(("w" "Work")
+       ("wi" "Work -- Inbox" entry
+        (file ,(my/work-file "inbox.org"))
+        "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%i"
+        :empty-lines 1)
+
+       ("p" "Personal")
+       ("pi" "Personal -- Inbox" entry
+        (file ,(my/personal-file "inbox.org"))
+        "* TODO %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n%i"
+        :empty-lines 1)
+
+       ("s" "Someday" entry
+        (file ,(expand-file-name "someday.org" org-directory))
+        "* SOMEDAY %?\n:PROPERTIES:\n:CREATED: %U\n:END:\n"
+        :empty-lines 1)
+
+       ("n" "Note (Denote)" plain
+        (function denote-org-capture)
+        ""
+        :no-save t :immediate-finish nil :kill-buffer t :jump-to-captured t)
+
+       ("r" "Weekly Review" entry
+        (file+olp+datetree
+         ,(expand-file-name "weekly-review.org" org-directory))
+        (file ,(expand-file-name "templates/weekly-review.org" org-directory))
+        :empty-lines 1 :tree-type week))
+
+     ;; ── Dynamic work category templates → "w<key>" ─────
+     (mapcar (lambda (c)
+               `(,(concat "w" (string (my/cat-key c)))
+                 ,(format "Work -- %s" (my/cat-label c))
+                 entry
+                 (file+olp ,(my/work-file "tasks.org")
+                           ,(my/cat-label c))
+                 ,(format "* TODO %%? :%s:\n:PROPERTIES:\n:Effort: 1:00\n:CREATED: %%U\n:END:\n"
+                          (my/cat-tag c))
+                 :empty-lines 1))
+             work-cats)
+
+     ;; ── Dynamic personal category templates → "p<key>" ──
+     (mapcar (lambda (c)
+               `(,(concat "p" (string (my/cat-key c)))
+                 ,(format "Personal -- %s" (my/cat-label c))
+                 entry
+                 (file+olp ,(my/personal-file "tasks.org")
+                           ,(my/cat-label c))
+                 ,(format "* TODO %%? :%s:\n:PROPERTIES:\n:Effort: 0:30\n:CREATED: %%U\n:END:\n"
+                          (my/cat-tag c))
+                 :empty-lines 1))
+             personal-cats))))
+#+end_src
+
+Build dynamic agenda commands. The super-agenda groups for each view are
+generated from the category list, so adding a category to =my/categories=
+automatically creates matching groups in every agenda view.
+
+#+begin_src elisp
+(defun my/make-agenda-commands ()
+  "Build org-agenda-custom-commands from my/categories."
+  (let* ((fixed-top    '((:name "NEXT"    :todo "NEXT"    :order 1)))
+         (fixed-bottom '((:name "Habits"  :habit t        :order 96)
+                          (:name "Waiting" :todo "WAITING" :order 97)
+                          (:discard (:todo ("SOMEDAY" "DONE" "CANCELLED")))))
+         (all-groups
+          (append fixed-top
+                  (my/make-super-agenda-groups 'both 3)
+                  fixed-bottom))
+         (work-groups
+          (append fixed-top
+                  (my/make-super-agenda-groups 'work 3)
+                  fixed-bottom))
+         (personal-groups
+          (append fixed-top
+                  (my/make-super-agenda-groups 'personal 3)
+                  fixed-bottom))
+         (time-grid-full
+          '((daily today require-timed remove-match)
+            (700 800 900 1000 1100 1200 1300
+                 1400 1500 1600 1700 1800 1900)
+            "....." "────────────────────"))
+         (time-grid-week
+          '((weekly today require-timed)
+            (800 1000 1200 1400 1600 1800)
+            "....." "────────────────────")))
+
+    `(
+      ;; ── (t) Today: work + personal integrated ────────
+      ("t" "Today -- Full Day"
+       ((agenda ""
+                ((org-agenda-files my/all-files)
+                 (org-agenda-span 'day)
+                 (org-agenda-time-grid ',time-grid-full)
+                 ;; Repeated scheduled items appear on the time grid, but
+                 ;; org-super-agenda's `:scheduled today' matcher only checks
+                 ;; the raw SCHEDULED date. Group timed blocks separately.
+                 (org-super-agenda-groups
+                  '((:name "Schedule & Blocks"
+                     :time-grid t
+                     :order 1)
+                    (:name "Due Today"
+                     :deadline today
+                     :order 2)
+                    (:name "Scheduled Today"
+                     :scheduled today
+                     :order 3)
+                    (:discard (:anything t))))))
+        (alltodo ""
+                 ((org-agenda-files my/all-files)
+                  (org-agenda-overriding-header "")
+                  (org-super-agenda-groups ',all-groups)))))
+
+      ;; ── (W) Week: full integrated view ───────────────
+      ("W" "Week -- Full View"
+       ((agenda ""
+                ((org-agenda-files my/all-files)
+                 (org-agenda-span 'week)
+                 (org-agenda-start-on-weekday 1)
+                 (org-agenda-time-grid ',time-grid-week)
+                 (org-super-agenda-groups
+                  '((:name "This Week"
+                     :time-grid t
+                     :scheduled t
+                     :deadline t
+                     :order 1)
+                    (:discard (:anything t))))))))
+
+      ;; ── (w) Work day only ────────────────────────────
+      ("w" "Work Day"
+       ((agenda ""
+                ((org-agenda-files my/work-files)
+                 (org-agenda-span 'day)
+                 (org-agenda-time-grid ',time-grid-full)
+                 (org-super-agenda-groups
+                  '((:name "Work Schedule"
+                     :time-grid t
+                     :order 1)
+                    (:name "Due Today"
+                     :deadline today
+                     :order 2)
+                    (:name "Scheduled Today"
+                     :scheduled today
+                     :order 3)
+                    (:discard (:anything t))))))
+        (alltodo ""
+                 ((org-agenda-files my/work-files)
+                  (org-agenda-overriding-header "")
+                  (org-super-agenda-groups ',work-groups)))))
+
+      ;; ── (p) Personal day only ────────────────────────
+      ("p" "Personal Day"
+       ((agenda ""
+                ((org-agenda-files my/personal-files)
+                 (org-agenda-span 'day)
+                 (org-agenda-time-grid ',time-grid-full)
+                 (org-super-agenda-groups
+                  '((:name "Personal Schedule"
+                     :time-grid t
+                     :order 1)
+                    (:name "Due Today"
+                     :deadline today
+                     :order 2)
+                    (:name "Scheduled Today"
+                     :scheduled today
+                     :order 3)
+                    (:discard (:anything t))))))
+        (alltodo ""
+                 ((org-agenda-files my/personal-files)
+                  (org-agenda-overriding-header "")
+                  (org-super-agenda-groups ',personal-groups)))))
+
+      ;; ── (R) Weekly Review ────────────────────────────
+      ("R" "Weekly Review"
+       ((todo "WAITING"
+              ((org-agenda-files my/all-files)
+               (org-agenda-overriding-header "Stuck / Waiting")))
+        (todo "NEXT"
+              ((org-agenda-files my/all-files)
+               (org-agenda-overriding-header "Still NEXT -- carry over?")))
+        (tags-todo "+DEADLINE<=\"<+7d>\""
+                   ((org-agenda-files my/all-files)
+                    (org-agenda-overriding-header "Due this week")))
+        (todo "TODO"
+              ((org-agenda-files my/all-files)
+               (org-agenda-overriding-header "Full Backlog")
+               (org-super-agenda-groups ',all-groups)))))
+
+      ;; ── (H) Habits consistency view ──────────────────
+      ("H" "Habits"
+       ((agenda ""
+                ((org-agenda-span 'day)
+                 (org-habit-show-habits-only-for-today nil)
+                 (org-super-agenda-groups
+                  '((:name "Work Habits"     :file-path "work"     :order 1)
+                    (:name "Personal Habits" :file-path "personal" :order 2)
+                    (:discard (:anything t))))))))
+
+      ;; ── (D) Deep Work session ────────────────────────
+      ("D" "Deep Work Session"
+       ((todo "NEXT|TODO"
+              ((org-agenda-files my/work-files)
+               (org-agenda-overriding-header "Deep Work -- pick your task")
+               (org-super-agenda-groups
+                '((:name "NEXT" :todo "NEXT" :order 1)
+                  (:name "TODO" :tag "DEEP"  :order 2)
+                  (:discard (:anything t))))))))
+
+      ;; ── (A) Admin blitz ──────────────────────────────
+      ("A" "Admin Blitz"
+       ((todo "NEXT|TODO"
+              ((org-agenda-files my/all-files)
+               (org-agenda-overriding-header "Admin + Comms")
+               (org-super-agenda-groups
+                '((:name "NEXT"           :todo "NEXT"
+                   :and (:tag ("ADMIN" "COMMS")) :order 1)
+                  (:name "Work Admin"     :and (:tag "ADMIN" :file-path "work")     :order 2)
+                  (:name "Work Comms"     :and (:tag "COMMS" :file-path "work")     :order 3)
+                  (:name "Personal Admin" :and (:tag "ADMIN" :file-path "personal") :order 4)
+                  (:discard (:anything t))))))))
+      )))
+#+end_src
+
+Apply the derived configuration. Tags, capture templates, and agenda commands
+are all built from =my/categories= at startup.
+
+#+begin_src elisp
+(after! org
+  (setq org-tag-alist (my/make-tag-alist)))
+#+end_src
+
+Set start day to today, this was ~-3d~ by default
+#+begin_src elisp
+(after! org (setq org-agenda-start-day nil))
+#+end_src
+
+** Logging & Properties
+Log completion timestamps into a =LOGBOOK= drawer to keep headings clean.
+Both rescheduling and re-deadlining log a timestamp (no note prompt, which
+would be disruptive during quick replanning).
+
+#+begin_src elisp
+(after! org
+  (setq org-log-done 'time
+        org-log-into-drawer t
+        org-log-redeadline 'time
+        org-log-reschedule 'time))
+#+end_src
+
+Effort estimates for the column view and for agenda effort sums. The list
+includes common increments so you can quickly pick from the allowed values.
+
+#+begin_src elisp
+(after! org
+  (setq org-global-properties
+        '(("Effort_ALL" .
+           "0:10 0:15 0:20 0:30 0:45 1:00 1:30 2:00 3:00 4:00"))))
+#+end_src
+
+Column view format -- shows task, state, tags, estimated effort, and clocked
+time side by side. Useful for reviewing time spent vs estimated during weekly
+reviews.
+
+#+begin_src elisp
+(after! org
+  (setq org-columns-default-format
+        "%50ITEM(Task) %TODO %TAGS %Effort(Est){:} %CLOCKSUM(Spent)"))
+#+end_src
+
+** Refile
+Refile targets include all work files (2 levels deep), personal tasks (2
+levels), and projects (3 levels for deeper nesting). Outline paths are shown
+with the file name prefix for clarity, and you can create new parent nodes if
+needed.
+
+#+begin_src elisp
+(after! org
+  (setq org-refile-targets
+        `((my/work-files :maxlevel . 2)
+          (,(my/personal-file "tasks.org") :maxlevel . 2)
+          (,(my/work-file "projects.org") :maxlevel . 3))
+        org-refile-use-outline-path 'file
+        org-refile-allow-creating-parent-nodes 'confirm
+        org-outline-path-complete-in-steps nil))
+#+end_src
+
+Auto-save all org buffers after refile so changes are persisted immediately.
+Also save before opening the agenda.
+
+#+begin_src elisp
+(after! org
+  (advice-add 'org-refile :after
+              (lambda (&rest _) (org-save-all-org-buffers)))
+  (advice-add 'org-agenda :before
+              (lambda (&rest _) (org-save-all-org-buffers))))
+#+end_src
+
+** Habits
+Load ~org-habit~ and configure the graph display. The graph column is set
+wide enough to not overlap with the category prefix in the agenda. Habits
+live in your regular org files (any heading with =STYLE: habit= property)
+-- no separate habits file needed.
+
+#+begin_src elisp
+(after! org
+  (add-to-list 'org-modules 'org-habit)
+  (require 'org-habit)
+  (setq org-habit-show-habits-only-for-today t
+        org-habit-graph-column 55
+        org-habit-preceding-days 21
+        org-habit-following-days 1
+        org-habit-show-all-today t))
+#+end_src
+
+** General Settings
+File associations -- open PDFs in Emacs (via pdf-tools), everything else as
+expected.
+
+#+begin_src elisp
+(after! org
   (setq org-file-apps '((remote . emacs)
                         (auto-mode . emacs)
                         (directory . emacs)
                         ("\\.mm\\'" . default)
                         ("\\.x?html?\\'" . default)
-                        ("\\.pdf\\'" . emacs)))
-  ;; (setq org-ellipsis " ⤵")
-  (setq org-todo-keywords
-        '((sequence "TODO(t)" "WAIT(w)" "IDEA(i)" "NEXT(n)" "|" "DONE(d)" "KILL(k)")
-          (sequence "[ ](T)" "[-](S)" "[?](W)" "|" "[X](D)")
-          (sequence "|" "OKAY(o)" "YES(y)" "NO(N)")))
+                        ("\\.pdf\\'" . emacs))))
+#+end_src
 
-  (add-to-list 'org-modules 'org-habit)
-  (advice-add 'org-refile :after 'org-save-all-org-buffers)
+Disable line numbers in org buffers (they add visual noise to prose). Keep
+compact indentation.
 
-  ;; Org capture
-  ;;   (setq org-capture-templates '())
-  ;;   (add-to-list 'org-capture-templates
-  ;;                '("m" "Music" entry (file+headline "music.org" "Inbox")
-  ;;                  "* %^{Artist} - %^{Title}
-  ;; :PROPERTIES:
-  ;; :Artist: %\\1
-  ;; :Title: %\\2
-  ;; :Genre: %^{Genre}
-  ;; :File:
-  ;; :Url:
-  ;; :Logged: %U
-  ;; :END:"
-  ;; :prepend t))
+#+begin_src elisp
+(after! org
+  (setq org-indent-indentation-per-level 1)
+  (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1))))
+#+end_src
 
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("t" "Personal todo" entry
-  ;;               (file+headline +org-capture-todo-file "Inbox")
-  ;;               "* TODO %?\n%i\n%a" :prepend t))
+Faces for agenda dates and ellipsis -- use variable pitch to match
+mixed-pitch-mode.
 
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("n" "Personal notes" entry
-  ;;               (file+headline +org-capture-notes-file "Inbox")
-  ;;               "* %u %?\n%i\n%a" :prepend t))
-
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("j" "Journal" entry
-  ;;               (file+olp+datetree +org-capture-journal-file)
-  ;;               "* %U %?\n%i\n%a" :prepend t))
-
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("J" "Job" entry
-  ;;                (file+headline "jobs.org" "Inbox")
-  ;;                "* %a :job:\n\n%U %?\n\n%:initial"))
-
-  ;; (add-to-list 'org-capture-templates
-  ;;              '("w" "Web site" entry
-  ;;                (file "")
-  ;;                "* %a :website:\n\n%U %?\n\n%:initial"))
-
-  (add-hook 'org-mode-hook (lambda () (display-line-numbers-mode -1)))
-
-  ;; (add-hook! 'org-mode-hook '+org-pretty-mode)
-
-  (setq
-   org-agenda-breadcrumbs-separator " ❱ "
-   org-agenda-current-time-string "⮜┈┈┈┈┈┈┈┈┈┈┈ now"
-   org-agenda-time-grid '((weekly today require-timed)
-                          (800 1000 1200 1400 1600 1800 2000)
-                          "---" "┈┈┈┈┈┈┈┈┈┈┈┈┈")
-   org-agenda-prefix-format '((agenda . "%i %-12:c%?-12t%b% s")
-                              (todo . " %i %-12:c")
-                              (tags . " %i %-12:c")
-                              (search . " %i %-12:c"))
-   ;; org-agenda-format-date (lambda (date) (concat (org-agenda-format-date-aligned date) "\n"))
-   )
-
-  (setq org-agenda-skip-deadline-prewarning-if-scheduled t)
-  (setq org-agenda-skip-scheduled-if-deadline-is-shown 'not-today)
-
-
+#+begin_src elisp
+(after! org
   (custom-set-faces!
     '(org-ellipsis :inherit variable-pitch)
     '(org-agenda-date :inherit variable-pitch)
     '(org-agenda-date-today :inherit variable-pitch)
-    '(org-agenda-date-weekend :inherit variable-pitch))
-
-  :custom
-  ;; If you use `org' and don't want your org files in the default location below,
-  ;; change `org-directory'. It must be set before org loads!
-  (org-agenda-start-with-log-mode t)
-  (org-agenda-tags-column -77)
-
-  (org-directory "~/org/")
-
-  (org-log-done 'time)
-  ;; (org-habit-show-habits-only-for-today nil)
-  (org-indent-indentation-per-level 1)
-  (org-tags-column -77))
+    '(org-agenda-date-weekend :inherit variable-pitch)))
 #+end_src
-** Org outlook
+
+** Context Switching
+Switch the active agenda scope at runtime. Useful when you want to run =M-x
+org-agenda= (the full dispatcher) and only see work or personal items.
+
 #+begin_src elisp
-;; (use-package! org-outlook
-;;   :config
-;;   ;; org-outlook uses eschulte-web-server. This packages name overlaps with skeeto's
-;;   (setq org-outlook-gpg-recipient "luca.van.der.kamp@postnl.nl")
-;;   (setq org-outlook-local-timezone "Europe/Berlin") ; Your local time zone
-;;   (setq org-outlook-file "~/org/outlook.org")
+(defun my/context-work ()
+  "Switch agenda to work files only."
+  (interactive)
+  (setq org-agenda-files my/work-files)
+  (message "Context: WORK"))
 
-;;   ;; Sync range (number of days)
-;;   (setq org-outlook-sync-start 14)  ; days in the past to keep in sync
-;;   (setq org-outlook-sync-end 90)    ; days in the future to keep in sync
+(defun my/context-personal ()
+  "Switch agenda to personal files only."
+  (interactive)
+  (setq org-agenda-files my/personal-files)
+  (message "Context: PERSONAL"))
 
-;;   ;; Optional: Customize full sync frequency (default: 7 days)
-;;   (setq org-outlook-full-sync-interval-days 7)  ; weekly validation
-;;                                         ;(setq org-outlook-full-sync-interval-days 14) ; bi-weekly validation
-;;                                         ;(setq org-outlook-full-sync-interval-days nil) ; disable automatic full syncs
-;;   )
+(defun my/context-all ()
+  "Switch agenda to all files (work + personal)."
+  (interactive)
+  (setq org-agenda-files my/all-files)
+  (message "Context: ALL"))
 #+end_src
+
+** Agenda Settings
+Core agenda display settings. We keep ~org-agenda-start-with-log-mode~ from
+the old config and add the time-blocking specific display options.
+
+#+begin_src elisp
+(after! org-agenda
+  ;; Skip completed items everywhere
+  (setq org-agenda-skip-deadline-if-done t
+        org-agenda-skip-scheduled-if-done t
+        org-agenda-skip-timestamp-if-done t)
+
+  ;; Use the current repeated occurrence date for agenda display. Without
+  ;; this, entries like <2026-06-06 Sat 09:45-10:00 +1d> may not appear on
+  ;; today's day agenda time grid.
+  (setq org-agenda-prefer-last-repeat t)
+
+  ;; Deadline behaviour
+  (setq org-deadline-warning-days 7
+        org-agenda-skip-deadline-prewarning-if-scheduled t
+        org-agenda-skip-scheduled-if-deadline-is-shown 'not-today)
+
+  ;; Start week on Monday, start with log mode on
+  (setq org-agenda-start-on-weekday 1
+        org-agenda-start-with-log-mode t)
+
+  ;; Visual: compact layout with a nice block separator
+  (setq org-agenda-compact-blocks t
+        org-agenda-block-separator
+        (propertize (make-string 60 ?━) 'face 'org-agenda-structure))
+
+  ;; Category + time prefix (wider than default for the category column)
+  ;; (setq org-agenda-prefix-format
+  ;;       '((agenda . " %i %┄┄┄┄┄16:c%?-12t% s")
+  ;;         (todo   . " %i %┄┄┄┄┄16:c")
+  ;;         (tags   . " %i %┄┄┄┄┄16:c")
+  ;;         (search . " %i %┄┄┄┄┄16:c")))
+  
+  (setq org-agenda-prefix-format
+        '((agenda . " %i %-16:c%?-12t% s")
+          (todo   . " %i %-16:c")
+          (tags   . " %i %-16:c")
+          (search . " %i %-16:c")))
+  
+  ;; Tags column pushed right
+  (setq org-agenda-tags-column -80)
+
+  ;; Current time indicator and breadcrumbs
+  (setq org-agenda-breadcrumbs-separator " ❱ "
+        org-agenda-current-time-string "<┄┄┄┄┄┄┄┄┄┄┄┄┄┄now")
+   org-agenda-prefix-format '((agenda . "%i %-12:c%?-12t%b% s")
+                              (todo . " %i %-12:c")
+                              (tags . " %i %-12:c")
+                              (search . " %i %-12:c"))
+
+  ;; Effort sum for appointments
+  (setq org-agenda-columns-add-appointments-to-effort-sum t)
+
+  ;; Clock report in agenda
+  (setq org-agenda-clockreport-parameter-plist
+        '(:link t :maxlevel 3 :compact t :narrow 55)))
+#+end_src
+
+** Super Agenda
+~org-super-agenda~ groups agenda items under visual headers by category/state.
+We use the ~evil-org-agenda-mode-map~ fix (not ~make-sparse-keymap~) so that
+evil keybindings (j/k/etc.) work correctly on header lines.
+
+#+begin_src elisp
+(use-package! org-super-agenda
+  :after org-agenda
+  :config
+  (org-super-agenda-mode 1)
+
+  (custom-set-faces!
+    '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold))
+
+  ;; Fix evil keybindings -- org-super-agenda headers steal j/k by default
+  (after! evil-org-agenda
+    (setq org-super-agenda-header-map evil-org-agenda-mode-map)))
+#+end_src
+
+** Custom Agenda Views
+Agenda views are generated dynamically from =my/categories=. Each view
+automatically includes super-agenda groups for all defined categories.
+See =my/make-agenda-commands= above for the implementation.
+
+Available views: =t= (today), =W= (week), =w= (work day), =p= (personal day),
+=R= (weekly review), =H= (habits), =D= (deep work), =A= (admin blitz).
+Access via =SPC o a= prefix.
+
+#+begin_src elisp
+(after! (org-agenda org-super-agenda)
+  (setq org-agenda-custom-commands (my/make-agenda-commands)))
+#+end_src
+
+** Org agenda Timeblocks
+*** more readable org agendao
+#+begin_src elisp
+(custom-set-faces!
+`(org-scheduled :foreground "#a0a0a0")
+`(org-scheduled-today :foreground "#ffffff")
+`(org-agenda-current-time :foreground "#ec406c" :weight bold)
+`(org-agenda-calendar-event :foreground "#ffffff" :background "#264aaa")
+`(org-agenda-calendar-daterange :foreground "#ffffff" :background "#264aaa")
+`(org-warning :foreground "#ffffff" :background "#ac002c"))
+#+end_src
+
+*** Colourize tags
+#+begin_src elisp
+(after! org
+  (setq org-modern-tag-faces
+        '(("ADMIN"  :background "#e6f3ff" :foreground "#005a9f")
+          ("MEETINGS" :background "#ffcccc" :foreground "#990000")
+          ("WORKOUT"   :background "#fff0e6" :foreground "#8b4513")
+          ;; Default fallback style for any tags not explicitly listed above
+          (t        :background "#f0f0f0" :foreground "#333333")))
+  (setq org-tag-faces
+        '(("ADMIN"     . (:background "#00bfff"))
+          ("MEETINGS" . (:background "#32cd32"))
+          ("urgent"   . (:background "#dc143c")))))
+#+end_src
+
+** Clocking
+Clock persistence survives Emacs restarts. Clocking in automatically switches
+the task to =NEXT= (so your "doing now" list stays accurate), and completing a
+task clocks out automatically. After 15 minutes idle, org prompts you to
+resolve the idle time.
+
+#+begin_src elisp
+(after! org-clock
+  (setq org-clock-persist 'history)
+  (org-clock-persistence-insinuate)
+
+  (setq org-clock-in-switch-to-state "NEXT"
+        org-clock-out-when-done t
+        org-clock-idle-time 15
+        org-clock-mode-line-total 'today
+        org-clock-report-include-clocking-task t))
+#+end_src
+
+** Capture Templates
+Capture templates are generated dynamically from =my/categories=. Work
+categories get =w<key>= shortcuts, personal categories get =p<key>=. Static
+templates for inboxes, someday, denote notes, and weekly review are always
+available. See =my/make-capture-templates= above for the implementation.
+
+#+begin_src elisp
+(after! org
+  (setq org-capture-templates (my/make-capture-templates)))
+#+end_src
+
+** Org Timeblock
+Visual calendar-style view of your scheduled time blocks. Complements the
+text-based agenda with a graphical overview of the day. Bound to =SPC o b=.
+
+#+begin_src elisp
+(use-package! org-timeblock
+  :commands (timeblock-week timeblock-day)
+  :config
+  (setq org-timeblock-show-future-repeats t
+        org-timeblock-inbox-file (my/work-file "inbox.org"))
+
+  (map! :map org-timeblock-mode-map
+        :n "h" #'org-timeblock-day-earlier
+        :n "l" #'org-timeblock-day-later
+        :n "H" #'org-timeblock-backward-span
+        :n "L" #'org-timeblock-forward-span
+
+        :n "j" #'next-line
+        :n "k" #'previous-line
+
+        :n "RET" #'org-timeblock-goto
+        :n "TAB" #'org-timeblock-toggle-entry
+
+        :n "q" #'quit-window))
+#+end_src
+
+** Org QL
+Power query engine for org files. Use =M-x org-ql-search= interactively to
+build ad-hoc queries like =(and (todo "NEXT") (tags "DEEP"))= across your
+files. Useful for searches the predefined agenda views don't cover.
+
+#+begin_src elisp
+(use-package! org-ql
+  :after org)
+#+end_src
+
+** Keybindings
+Agenda views and capture shortcuts replace Doom's default =SPC o a= (org-agenda
+dispatcher) and =SPC o c= (org-capture dispatcher). If you need the full
+dispatchers, use =M-x org-agenda= / =M-x org-capture= directly.
+
+#+begin_src elisp
+(map! :leader
+      ;; Quick agenda views (replaces SPC o a -> org-agenda)
+      (:prefix ("o a" . "agenda views")
+       :desc "Today (all)"        "t" (cmd! (org-agenda nil "t"))
+       :desc "Week (all)"         "W" (cmd! (org-agenda nil "W"))
+       :desc "Work day"           "w" (cmd! (org-agenda nil "w"))
+       :desc "Personal day"       "p" (cmd! (org-agenda nil "p"))
+       :desc "Weekly review"      "R" (cmd! (org-agenda nil "R"))
+       :desc "Habits"             "H" (cmd! (org-agenda nil "H"))
+       :desc "Deep Work session"  "D" (cmd! (org-agenda nil "D"))
+       :desc "Admin blitz"        "A" (cmd! (org-agenda nil "A")))
+
+      ;; Capture shortcuts (replaces SPC o c -> org-capture)
+      (:prefix ("o c" . "capture")
+       :desc "Work inbox"         "w" (cmd! (org-capture nil "wi"))
+       :desc "Personal inbox"     "p" (cmd! (org-capture nil "pi"))
+       :desc "Someday"            "s" (cmd! (org-capture nil "s"))
+       :desc "Note (Denote)"      "n" (cmd! (org-capture nil "n"))
+       :desc "Weekly review"      "r" (cmd! (org-capture nil "r")))
+
+      ;; Context switching
+      (:prefix ("o s" . "agenda scope")
+       :desc "All contexts"       "a" #'my/context-all
+       :desc "Work only"          "w" #'my/context-work
+       :desc "Personal only"      "p" #'my/context-personal)
+
+      ;; Visual time blocks
+      :desc "Visual time blocks"  "o b" #'org-timeblock)
+#+end_src
+
+Clocking keybindings in the agenda buffer (localleader prefix, so =,= in evil
+normal state within the agenda).
+
+#+begin_src elisp
+(after! org-agenda
+  (map! :map org-agenda-mode-map
+        :localleader
+        "c i" #'org-agenda-clock-in
+        "c o" #'org-agenda-clock-out
+        "c r" #'org-agenda-clockreport-mode
+        "e"   #'org-agenda-set-effort))
+#+end_src
+
 ** Roam
 #+begin_src elisp
 ;; (use-package! org-roam
@@ -577,160 +1217,95 @@ Add missing LaTeX prettify sequences.
 #+end_src
 
 #+begin_src elisp
-(use-package! websocket
-  :after org-roam)
+;; (use-package! websocket
+;;   :after org-roam)
 
-(use-package! org-roam-ui
-  :after org
-  ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
-  ;;         a hookable mode anymore, you're advised to pick something yourself
-  ;;         if you don't care about startup time, use
-  ;;  :hook (after-init . org-roam-ui-mode)
-  :config
-  (setq org-roam-ui-sync-theme t
-        org-roam-ui-follow t
-        org-roam-ui-update-on-save t
-        org-roam-ui-open-on-start t))
+;; (use-package! org-roam-ui
+;;   :after org
+;;   ;;         normally we'd recommend hooking orui after org-roam, but since org-roam does not have
+;;   ;;         a hookable mode anymore, you're advised to pick something yourself
+;;   ;;         if you don't care about startup time, use
+;;   ;;  :hook (after-init . org-roam-ui-mode)
+;;   :config
+;;   (setq org-roam-ui-sync-theme t
+;;         org-roam-ui-follow t
+;;         org-roam-ui-update-on-save t
+;;         org-roam-ui-open-on-start t))
 #+end_src
 
-#+RESULTS:
-: t
 
-** Agenda
+** Org-outlook
 #+begin_src elisp
-(use-package! org-super-agenda
-  :after org-agenda
-  :config
-  (setq org-super-agenda-groups
-        '((:name "Today"
-           :time-grid t
-           :order 1)
-          (:name "Next"
-           :todo ("NEXT")
-           :order 2)
-          (:name "Wait"
-           :todo ("WAIT")
-           :order 4)
-          (:name "Done"
-           :todo ("DONE" "KILL")
-           :order 6)
-          (:name "Habits"
-           :habit t
-           :order 5)
-          (:name "Thesis"
-           :auto-category t
-           :order 3)))
-
-  (custom-set-faces!
-    '(org-super-agenda-header :inherit variable-pitch :height 1.5 :weight bold))
-
-  (org-super-agenda-mode 1)
-
-  ;; Fix evil keybindings as org-super-agenda shadows these when point is on header
-  (after! evil-org-agenda
-    (setq org-super-agenda-header-map evil-org-agenda-mode-map)))
+;; (use-package! web-server)
 #+end_src
 
+#+begin_src elisp
+;; (use-package! org-outlook
+;;   :after org
+;;   :config
+;;   ;; Optional: Use your own Microsoft Entra App Registration
+;;                                         ;(setq org-outlook-client-id "client-id-of-your-registered-app")
+;;                                         ;(setq org-outlook-tenant-id "your-azure-tenant-id")
+
+;;   ;; Required settings
+;;   (setq org-outlook-gpg-recipient "luca.van.der.kamp@postnl.nl")
+;;   (setq org-outlook-local-timezone "Europe/Berlin") ; Your local time zone
+;;   (setq org-outlook-file "~/org/work/outlook.org")
+
+;;   ;; Sync range (number of days)
+;;   (setq org-outlook-sync-start 14)  ; days in the past to keep in sync
+;;   (setq org-outlook-sync-end 90)    ; days in the future to keep in sync
+
+;;   ;; Optional: Customize full sync frequency (default: 7 days)
+;;   (setq org-outlook-full-sync-interval-days 7)  ; weekly validation
+;;                                         ;(setq org-outlook-full-sync-interval-days 14) ; bi-weekly validation
+;;                                         ;(setq org-outlook-full-sync-interval-days nil) ; disable automatic full syncs
+
+;;   ;; Optional: Set your email for availability checking functions
+;;   (setq org-outlook-user-email "luca.van.der.kamp@postnl.nl"))
+#+end_src
 
 ** Org modern
 #+begin_src elisp
-(use-package! org-modern
-  :hook
-  ((org-mode . org-modern-mode)
-  (org-agenda-finalize-hook . org-modern-agenda))
-  ;; (org-agenda-finalize . org-modern-agenda)
-  :config
+(after! org
   (setq org-modern-star ["◉" "●" "○" "◈" "◆" "❖" "▶" "▷"])
   (custom-set-faces!
     '(org-modern-label nil :height 1.0 :box '(:color "#FFFFE8" :line-width 2)))
-  (setq org-modern-todo nil)
+  
+  (setq org-modern-timestamp nil)
 
   (setq org-tags-column 0
         org-auto-align-tags nil)
-
-  ;; avoid unneccesary calculations, I never need it.
-  (defalias 'org-align-tags #'ignore)
-
-  ;; Inspired by Ihor Radchenko’s code at: https://orgmode.org/list/87lfh745ch.fsf@localhost/
-
-  (add-hook 'org-modern-mode-hook #'aj/org-set-tag-align-keywords)
-  (defun aj/org-set-tag-align-keywords ()
-    (add-to-list 'font-lock-extra-managed-props 'org-tag-aligned)
-    (font-lock-add-keywords nil '((yant/org-align-tags t)) 'append))
-
-  (defun aj/string-pixel-width (string &optional mode)
-    "Calculate pixel width of STRING.
-Optional MODE specifies major mode used for display."
-    (let ((fra face-remapping-alist))
-      (with-temp-buffer
-        (with-silent-modifications
-          (setf (buffer-string) string))
-        (when (fboundp mode)
-          (funcall mode)
-          (font-lock-ensure))
-        (setq-local face-remapping-alist fra)
-        (if (get-buffer-window (current-buffer))
-            (car (window-text-pixel-size nil (line-beginning-position) (point)))
-          (set-window-buffer nil (current-buffer))
-          (car (window-text-pixel-size nil (line-beginning-position) (point)))))))
-
-
-  (defun yant/org-align-tags (limit &optional force)
-    "Align all the tags in org buffer."
-    (save-match-data
-      (when (eq major-mode 'org-mode)
-        (let ((ellw (aj/string-pixel-width org-ellipsis)))
-          (while (re-search-forward "^\\*+ \\(.+?\\)\\([ \t]+\\)\\(:\\(?:[^ \n]+:\\)+\\)$" limit t)
-            (when (and (match-string 2)
-                       (or force
-                           (not (get-text-property (match-beginning 2) 'org-tag-aligned))))
-              (with-silent-modifications
-                (put-text-property (match-beginning 2) (match-end 2) 'org-tag-aligned t)
-                (put-text-property
-                 (if (>= 2 (- (match-end 2) (match-beginning 2)))
-                     (match-beginning 2)
-                   ;; multiple whitespaces may mean that we are in process of typing
-                   (1+ (match-beginning 2)))
-                 (match-end 2)
-                 'display
-                 `(space . (:align-to
-                            (- right
-                               (,(+ 3 ;; no idea, but otherwise it is sometimes not enough
-                                    ellw
-                                    (if (match-beginning 3)
-                                        (car (window-text-pixel-size nil (match-beginning 3) (match-end 3)))
-                                      0))))))))))))))
-  )
+  
+  (add-hook! 'org-agenda-finalize-hook #'org-modern-agenda))
 #+end_src
 
 ** Org appear
 #+begin_src elisp
 
 (use-package! org-appear
+  :after org
   :hook (org-mode . org-appear-mode)
   :config
   (setq org-appear-autoemphasis t
         org-appear-autosubmarkers t
-        org-appear-autolinks nil)
-  ;; for proper first-time setup, `org-appear--set-elements'
-  ;; needs to be run after other hooks have acted.
-  (run-at-time nil nil #'org-appear--set-elements))
-
+        org-appear-autolinks nil))
 #+end_src
 
 ** Org github markdown exporter
 #+begin_src elisp
-(use-package! ox-gfm)
+(use-package! ox-gfm :after org)
 #+end_src
 
 ** Org capture
 #+begin_src elisp
-(use-package! org-protocol-capture-map)
+(use-package! org-protocol-capture-map :after org)
 #+end_src
 
 ** Org download
 #+begin_src elisp
 (use-package! org-download
+  :after org
   :config
   (setq-default org-download-image-dir ".attach")
   (setq org-download-method 'directory))
@@ -738,9 +1313,9 @@ Optional MODE specifies major mode used for display."
 
 ** Org popup for comment editting
 #+begin_src elisp
-(use-package! markdown-mode)
-
+;; (use-package! markdown-mode)
 (use-package! poporg
+  :commands poporg-dwim 
   :config
   (setq poporg-edit-hook '(gfm-mode))
   (setq poporg-comment-skip-regexp "[[:space:]!/]*")
@@ -757,17 +1332,61 @@ Optional MODE specifies major mode used for display."
 
 #+RESULTS:
 
+** Notifications
+#+begin_src elisp
+;; (use-package! org-wild-notifier
+;;   :hook (doom-first-input . org-wild-notifier-mode)
+;;   :config
+;;   (setq org-wild-notifier-alert-time '(0 10 30)))
+#+end_src
+
+** import from khal
+#+begin_src elisp
+(use-package! khalel
+  :after org
+  :config
+  (khalel-add-capture-template)
+  (setq khalel-capture-key "e")
+  (setq khalel-import-org-file (concat org-directory "/" "personal" "/" "calendar.org"))
+  (setq khalel-import-end-date "+30d"))
+#+end_src
+
 ** fix ~org-tree-slide~
 #+begin_src elisp
 (after! org-tree-slide
   (remove-hook 'org-tree-slide-play-hook #'+org-present-hide-blocks-h)
   (remove-hook 'org-tree-slide-stop-hook #'+org-present-hide-blocks-h))
 #+end_src
+* Calendar
+
+#+begin_src elisp
+(after! calfw
+  (advice-add #'+calendar/open-calendar :override
+              (lambda ()
+                (interactive)
+                (calfw-open-calendar-buffer
+                 :view 'week  ; Forces the calendar to open in Weekly view
+                 :contents-sources
+                 (list
+                  ;; Work Sources
+                  (calfw-org-create-file-source "Work Blocks" "~/org/work/timeblocks.org" "Tomato")
+                  (calfw-org-create-file-source "Work Tasks"  "~/org/work/tasks.org"      "SteelBlue")
+                  
+                  ;; Personal Sources
+                  (calfw-org-create-file-source "Pers Blocks" "~/org/personal/timeblocks.org" "LimeGreen")
+                  (calfw-org-create-file-source "Pers Tasks"  "~/org/personal/tasks.org"      "Goldenrod"))))))
+#+end_src
+
+
+#+begin_src elisp
+(map! :leader
+      :desc "Open Custom Calendar"
+      "o C" #'+calendar/open-calendar)
+#+end_src
 
 * Smerge
 #+begin_src elisp
-(use-package! smerge-mode
-  :config
+(after! smerge-mode
   (map! :leader
         :map smerge-mode-map
         :desc "Merge"
@@ -791,9 +1410,6 @@ Optional MODE specifies major mode used for display."
                           ">" #'smerge-diff-base-lower))))
 #+end_src
 
-#+RESULTS:
-: t
-
 * Checkers
 ** Flycheck
 #+begin_src elisp
@@ -806,30 +1422,19 @@ Optional MODE specifies major mode used for display."
 
 The default keybindings are unbearable
 #+begin_src elisp
-(use-package! flycheck
-  :config
-  (map! :leader "e" flycheck-command-map)
-  ;; (setq flycheck-popup-tip-mode -1)
-  )
+(after! flycheck
+  (map! :leader "e" flycheck-command-map))
 #+end_src
 
 #+begin_src elisp
-(use-package! flyover)
+(use-package! flyover :after flycheck)
 #+end_src
 
 #+begin_src elisp
-(use-package! flycheck-inline
-  :config
-  (with-eval-after-load 'flycheck
-    (add-hook 'flycheck-mode-hook #'flycheck-inline-mode)))
+;; (use-package! flycheck-inline
+;;   :after flycheck
+;;   :hook (flycheck-mode . flycheck-inline-mode))
 #+End_src
-
-#+RESULTS:
-
-#+begin_src elisp
-;; (add-hook '+flycheck-popup-mode-hook #'disable-flycheck-popup-tip)
-#+end_src
-
 
 ** Spelling
 *** Flyspell
@@ -846,29 +1451,18 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
   (setq ispell-personal-dictionary ispell-current-personal-dictionary)
   (flyspell-buffer))
 
-(use-package! flyspell
-  :hook
-  ((text-mode . flyspell-mode)
-   (prog-mode . flyspell-prog-mode))
-  :config
-  (setq flyspell-prog-text-faces
-        '(tree-sitter-hl-face:comment
-          tree-sitter-hl-face:doc
-          tree-sitter-hl-face:string
-          tree-sitter-hl-face:string.special
-          font-lock-comment-face
-          font-lock-doc-face
-          font-lock-string-face))
-
+(after! ispell
   (add-hook 'ispell-change-dictionary-hook 'my/sync-personal-dictionary)
-  ;; (add-hook 'ispell-change-dictionary-hook 'flyspell-buffer)
   (ispell-change-dictionary "en")
-  (define-key flyspell-mode-map (kbd "C-;") nil)
-
   (map! :leader
         :desc "Change dictionary language"
         "l" #'ispell-change-dictionary))
+
+(after! flyspell
+  (define-key flyspell-mode-map (kbd "C-;") nil))
+
 #+end_src
+
 
 *** langtool
 #+begin_src elisp
@@ -887,10 +1481,11 @@ We remove the =C-;= binding of ~flyspell-mode-keymap~ as it clashes with our bin
 (after! spell-fu
   (add-hook! prog-mode
     (setq spell-fu-faces-include
-          '(tree-sitter-hl-face:comment
-            tree-sitter-hl-face:doc
-            tree-sitter-hl-face:string
-            tree-sitter-hl-face:string.special
+          '(
+            ;; tree-sitter-hl-face:comment
+            ;; tree-sitter-hl-face:doc
+            ;; tree-sitter-hl-face:string
+            ;; tree-sitter-hl-face:string.special
             font-lock-comment-face
             font-lock-doc-face
             font-lock-string-face))))
@@ -1087,41 +1682,48 @@ Requirements: [[https://github.com/jgm/citeproc][citeproc]]
   :after (ebib biblio)
   :bind (:map ebib-index-mode-map
          ("B" . ebib-biblio-import-doi) ;; Press 'B' in Ebib to import by DOI
-         :map biblio-selection-mode-map
-         ("e" . ebib-biblio-selection-import))) ;; Press 'e' to import selected
+          :map biblio-selection-mode-map
+          ("e" . ebib-biblio-selection-import))) ;; Press 'e' to import selected
 #+end_src
 
 #+begin_src elisp
+;; Shared OA-only paper workflow for citar and ebib.
+(defconst my/bib-file (expand-file-name "~/Documents/research/references.bib"))
+(defconst my/bib-pdf-dir (expand-file-name "~/Documents/research/papers/"))
+(defconst my/bib-notes-dir (expand-file-name "~/Documents/research/notes/"))
 (use-package! citar
-  ;;   :config
-  ;;   ;; (setq citar-symbols
-  ;;   ;;       `((file . (,(all-the-icons-icon-for-file "foo.pdf" :face 'all-the-icons-dred) .
-  ;;   ;;                  ,(all-the-icons-icon-for-file "foo.pdf" :face 'citar-icon-dim)))
-  ;;   ;;         (note . (,(all-the-icons-icon-for-file "foo.txt") .
-  ;;   ;;                  ,(all-the-icons-icon-for-file "foo.txt" :face 'citar-icon-dim)))
-  ;;   ;;         (link .
-  ;;   ;;               (,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'all-the-icons-dpurple) .
-  ;;   ;;                ,(all-the-icons-faicon "external-link-square" :v-adjust 0.02 :face 'citar-icon-dim)))))
-  ;;   ;; ;; Here we define a face to dim non 'active' icons, but preserve alignment
-  ;;   ;; (defface citar-icon-dim
-  ;;   ;;   '((((background dark)) :foreground "#282c34")
-  ;;   ;;     (((background light)) :foreground "#fafafa"))
-  ;;   ;;   "Face for obscuring/dimming icons"
-  ;;   ;;   :group 'all-the-icons-faces)
-
   :custom
-  (citar-bibliography '("~/Documents/research/references.bib"))
-  (citar-library-paths '("~/Documents/research/papers/"))
-  (citar-notes-paths '("~/Documents/research/notes"))
-  )
+  (org-cite-global-bibliography ())
+  (citar-bibliography (list my/bib-file))
+  (citar-library-paths (list my/bib-pdf-dir))
+  (citar-notes-paths (list my/bib-notes-dir))
+  (org-cite-insert-processor 'citar)
+  (org-cite-follow-processor 'citar)
+  (org-cite-activate-processor 'citar)
+  :config
+  (map! :map citar-map
+        :desc "Open or download PDF" "O" #'my/citar-open-or-download-pdf))
+
+(use-package! citar-embark
+  :after (citar embark)
+  :config
+  (citar-embark-mode +1)
+  (define-key citar-embark-map (kbd "O") #'my/citar-embark-open-or-download-pdf)
+  (define-key citar-embark-citation-map (kbd "O") #'my/citar-embark-open-or-download-pdf))
+
+(use-package! ebib
+  :custom
+  (ebib-file-search-dirs (list my/bib-pdf-dir))
+  (ebib-import-target-directory 'first-search-dir)
+  (ebib-import-source-directory my/bib-pdf-dir)
+  (ebib-truncate-file-names t))
 #+end_src
 
 * Vertico
 #+begin_src elisp
 (use-package! vertico
-  :custom
-  (vertico-count 12)
-  )
+  :config
+  (setq vertico-count 12))
 #+end_src
 * Languages
 ** Rust
@@ -1159,19 +1761,13 @@ TODO: changed to dape
 (use-package! rustic
   :config
   (setq rustic-compile-backtrace 1)
-  (setq rustic-format-on-save t)
-  )
+  (setq rustic-format-on-save t))
 #+end_src
 
 Fix a bug in rustic
 
 #+begin_src elisp
 (after! rustic
-  ;; (defun my-rustic-beginning-of-defun-ts (arg)
-  ;;   "Use tree-sitter for defun navigation instead of the broken legacy function."
-  ;;   (interactive "p")
-  ;;   (treesit-beginning-of-defun arg))
-
   (advice-add #'rustic-beginning-of-defun :override #'treesit-beginning-of-defun))
 #+end_src
 
@@ -1236,37 +1832,31 @@ poetry config virtualenvs.in-project true
 #+end_src
 
 * Magit
+Will become superflouos at Magit v4.6.0  (https://github.com/magit/magit/issues/2942#issuecomment-4200671428)
 #+begin_src elisp
-(use-package! difftastic
-  ;; :demand t
-  :bind (:map magit-blame-read-only-mode-map
-              ("D" . difftastic-magit-show)
-              ("S" . difftastic-magit-show))
-  :config
-  (eval-after-load 'magit-diff
-    '(transient-append-suffix 'magit-diff '(-1 -1)
-       [("D" "Difftastic diff (dwim)" difftastic-magit-diff)
-        ("S" "Difftastic show" difftastic-magit-show)]))
-  (setopt magit-format-file-function #'magit-format-file-nerd-icons))
-#+end_src
+(after! magit
+  (defun magit-diff-fontify-with-diff-mode ()
+    (save-excursion
+      (let ((min (point-min))
+            (max (point-max)))
+        (save-restriction
+          (widen)
+          (setq-local buffer-read-only nil)
+          (setq-local diff-font-lock-syntax 'hunk-also)
+          (goto-char min)
+          (diff--font-lock-syntax max)))))
 
-#+begin_src elisp
-(use-package! magit-syntax-highlight
-  :hook ((magit-syntax-highlight-mode . magit-mode)))
+  (add-hook 'magit-diff-wash-diffs-hook #'magit-diff-fontify-with-diff-mode))
 #+end_src
 
 ** Code review
 Use passwords configured for forge.
 #+begin_src elisp
-(use-package! code-review
-  ;; :custom
-  ;; (code-review-auth-login-marker 'forge)
-  :config
+(after! code-review
   (setq code-review-auth-login-marker 'forge)
   (add-hook 'code-review-mode-hook
             (lambda ()
-              (persp-add-buffer (current-buffer))))
-  )
+              (persp-add-buffer (current-buffer)))))
 #+end_src
 
 #+begin_src elisp
@@ -1371,18 +1961,6 @@ range)."
 # #+begin_src elisp
 # (load (doom-path doom-private-dir private."el"))
 # #+end_src
-* git-review
-#+begin_src elisp
-(use-package! git-review
-  :bind (:map git-review-mode-map (("$$" . git-review-jinx-correct)
-                                   ("$n" . git-review-jinx-next)
-                                   ("$p" . git-review-jinx-previous)))
-  :config
-  (git-review-db-initialize)
-  (require 'git-review-jinx)
-  (require 'git-review-magit)
-  (advice-add #'split-window-sensibly :around #'git-review--set-split-tresholds))
-#+end_src
 * PR-review
 #+begin_src elisp
 (use-package! pr-review
@@ -1391,29 +1969,23 @@ range)."
   :config
   (map! :leader
         :desc "PR notifications"
-        "r" #'pr-review-notification)
+        "R" #'pr-review-notification)
   (map! :after pr-review
-   :map pr-review-mode-map
-   "RET" #'pr-review-context-comment
+        :map pr-review-mode-map
+        "RET" #'pr-review-context-comment
         (:prefix ("g" . "pr-review")
                  "C" #'pr-review-comment
                  "c" #'pr-review-context-comment
                  "e" #'pr-review-context-edit
-  "a" #'pr-review-
                  "S" #'pr-review-submit-review
-                 ))
-  )
+                 )))
 #+end_src
 
-* git-link
-#+begin_src elisp
-(use-package! git-link)
-#+end_src
 * Envrc
 #+begin_src elisp
-(use-package! envrc
-  :config
-  (envrc-global-mode))
+;; (use-package! envrc
+;;   :config
+;;   (envrc-global-mode))
 #+end_src
 * Slack
 
@@ -1473,13 +2045,12 @@ range)."
   :commands (slack-start)
   :hook ((slack-mode . visual-line-mode)
          (slack-buffer-mode . visual-line-mode))
-  :custom
-  (slack-buffer-emojify t)
-  (slack-prefer-current-team t)
-  (lui-time-stamp-position 'right)
   :init
   (advice-add 'slack-start :before #'my/slack-auto-refresh-wrapper) 
   :config
+  (set-popup-rule! "^\\*slack" :ignore t)
+  (setq slack-buffer-emojify t)
+  (setq slack-prefer-current-team t)
   (evil-define-key 'normal slack-info-mode-map
     ",u" 'slack-room-update-messages)
   (evil-define-key 'normal slack-mode-map
@@ -1508,8 +2079,7 @@ range)."
                  "t" #'my/slack-start
                  "S" #'slack-select-rooms
                  "u" #'slack-select-unread-rooms
-                 "i" #'slack-im-select))
-  )
+                 "i" #'slack-im-select)))
 #+end_src
 
 #+begin_src elisp
@@ -1518,22 +2088,9 @@ range)."
   (setq alert-default-style 'libnotify))
 #+end_src
 
-* Aws
 #+begin_src elisp
-;; (use-package! aws-mode
-;;  :custom
-;;   (aws-vault t) ;; when t use aws-vault cmd to get into aws session
-;;   (aws-output "json") ;; optional: yaml, json, text (default: yaml)
-;;   (aws-organizations-account "root")) ;; profile of organizations account. organizations commands are automatically executed against this account, when specified
-
-;; (use-package aws-evil
-;;   :after (aws-mode evil)
-;;   :load-path "~/.emacs.d/packages/awscli")
-#+end_src
-
-* Themes
-#+begin_src elisp
-(use-package! ef-themes)
+(after! lui
+  (setq lui-time-stamp-position 'right))
 #+end_src
 
 * Tidal Cycles
@@ -1548,8 +2105,7 @@ range)."
 (use-package! emms
   :custom
   (emms-player-mpd-server-name "192.168.2.5")
-  (emms-player-mpd-server-port "6600")
-  )
+  (emms-player-mpd-server-port "6600"))
 #+end_src
 
 #+begin_src elisp
@@ -1561,49 +2117,42 @@ range)."
 
 #+end_src
 
-* Shipit
+* EWW
 #+begin_src elisp
-;; (use-package! shipit
-;;   :after magit
-;;   :config
-;;   (shipit-init)
-;;   (setq shipit-github-token
-;;         (let ((match (car (auth-source-search :host "api.github.com"))))
-;;           (if match
-;;               (let ((secret (plist-get match :secret)))
-;;                 (if (functionp secret)
-;;                     (funcall secret)
-;;                   secret))
-;;             (message "Warning: shipit-github-token not found in auth-sources")))))
+(set-popup-rule! "^\\*eww" :ignore t)
 #+end_src
 
-* LLM
-** Agent-shell
-#+begin_src elisp
-(use-package! acp)
-
-(use-package! agent-shell
+* Denote
+#+begin_src elisp 
+(use-package! denote
   :config
-  (evil-define-key 'normal agent-shell-mode-map (kbd "za") 'agent-shell-ui-toggle-block))
+  ;; Set your main notes directory
+  (setq denote-directory (expand-file-name "~/Documents/notes/"))
+  
+  ;; Default file extension is org, but you can also use md or txt
+  (setq denote-file-type 'org) 
+  
+  ;; Configure prompts when running M-x denote
+  (setq denote-prompts '(title keywords))
+  
+  ;; Optional: Pick a template format for Org front matter
+  (setq denote-templates nil))
+
+  
+(map! :leader
+    (:prefix-map ("n" . "notes")
+                    (:prefix-map ("d" . "denote")
+                    :desc "Create note"        "d" #'denote
+                    :desc "Insert link"        "i" #'denote-link
+                    :desc "Find/Create note"   "f" #'denote-open-or-create
+                    :desc "Rename file"        "r" #'denote-rename-file)))
+(after! org
+  (require 'denote-org))
 #+end_src
 
-* Github projects
+* tramp proxies
 #+begin_src elisp
-(use-package! gh-projects
-  :commands (gh-projects gh-projects-browse gh-projects-dispatch)
-  :after forge
-  :custom
-  (gh-projects-default-owner "Postnl-Production")
-  :config
-  (setq gh-projects-default-owner "Postnl-Production")
-  (setq gh-projects-default-number 2)
-  (setq gh-projects-use-color t)
-  ;; (setq gh-projects-local-repo-search-paths '("~/Projects"))
-  (setq gh-projects-quick-actions
-   '(("c" "Claim"
-      ((assign-self)
-       (set-status "🔧 In progress")))
-     ("r" "Ready for review"
-      ((set-status "👀 Review")
-       (add-label "ready-for-review"))))))
+(after! tramp-mode
+        (add-to-list 'tramp-default-proxies-alist
+                     '("raspi" "\\`root\\'" "/ssh:raspi:")))
 #+end_src
